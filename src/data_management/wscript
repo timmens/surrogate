@@ -10,7 +10,6 @@ def build(ctx):
             ctx.path_to(ctx, "IN_DATA", "data.pkl"),
         ],
         target=[
-            ctx.path_to(ctx, "OUT_DATA", "variable_reference.csv"),
             ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
             ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
         ],
