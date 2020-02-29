@@ -1,36 +1,46 @@
-"""Linear regression surrogate model."""
+"""Polynomial regression surrogate model."""
 import glob
 import warnings
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression as LinReg
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 
 from src.model_code.surrogate import assert_input_fit
 from src.model_code.surrogate import Surrogate
 
 
-class LinearRegression(Surrogate):
-    """Linear regression surrogate model."""
+class PolynomialRegression(Surrogate):
+    """Polynomial regression surrogate model."""
 
     def __init__(self):
+        self.degree = None
         self.coefficients = None
         self.is_fitted = False
         super().__init__()
 
     def fit(self, X, y, **kwargs):
-        """Fit a linear model using least squares.
+        """Fit a polynomial regression model using least squares.
 
         Args:
-            X (pd.DataFrame): Data on features.
-            y (pd.Series or np.ndarray): Data on outcomes.
-            **kwargs: 'fit_intercept' (bool): Should an intercept be fitted.
+            X (pd.DataFrame):
+                Data on features.
+
+            y (pd.Series or np.ndarray):
+                Data on outcomes.
+
+            **kwargs:
+                - 'degree' (int): Degree of the polynomial model.
+                - 'fit_intercept' (bool): Should an intercept be fitted.
 
         Returns:
-            self: The fitted LinearRegression object,
+            self: The fitted PolynomailRegression object.
 
         """
         coefficients = _fit(X=X, y=y, **kwargs)
+
+        self.degree = kwargs["degree"]
         self.coefficients = coefficients
         self.is_fitted = True
 
@@ -44,7 +54,7 @@ class LinearRegression(Surrogate):
         return None and a warning.
 
         Args:
-            X (pd.DataFrame): New data on features.
+            X (pd.DataFrame): New data on features (unprocessed).
 
         Returns:
             - None, if ``self.is_fitted`` is False and otherwise
@@ -55,7 +65,7 @@ class LinearRegression(Surrogate):
             warnings.warn("The model has not been fitted yet.", UserWarning)
             return None
 
-        predictions = _predict(coefficients=self.coefficients, X=X)
+        predictions = _predict(X=X, coefficients=self.coefficients, degree=self.degree)
         return predictions
 
     def save(self, filename, overwrite=False):
@@ -65,14 +75,19 @@ class LinearRegression(Surrogate):
         as a csv file. Can be loaded afterwards using the method ``load``.
 
         Args:
-            filename (str): File path.
+            filename (str): File path, has to end with ".csv".
             overwrite (bool): Should the file be overwritten if it exists.
 
         Returns:
             None
 
         """
-        _save(coefficients=self.coefficients, filename=filename, overwrite=overwrite)
+        _save(
+            coefficients=self.coefficients,
+            degree=self.degree,
+            filename=filename,
+            overwrite=overwrite,
+        )
 
     def load(self, filename):
         """Load a fitted model from disc.
@@ -89,19 +104,21 @@ class LinearRegression(Surrogate):
             None
 
         """
-        coefficients = _load(filename)
+        coefficients, degree = _load(filename)
         self.coefficients = coefficients
+        self.degree = degree
         self.is_fitted = True
 
         return self
 
 
-def _fit(X, y, fit_intercept=True):
-    """Fit a linear model using least squares.
+def _fit(X, y, degree, fit_intercept=False):
+    """Fit a polynomial regression model using least squares.
 
     Args:
         X (pd.DataFrame): Data on features.
         y (pd.Series or np.ndarray): Data on outcomes.
+        degree (int): Degree of the polynomial model.
         fit_intercept (bool): Should an intercept be fitted.
 
     Returns:
@@ -109,13 +126,15 @@ def _fit(X, y, fit_intercept=True):
 
     """
     assert_input_fit(X=X, y=y)
-    XX = np.array(X)
 
-    lm = LinReg(fit_intercept=fit_intercept)
-    lm = lm.fit(X=XX, y=y)
+    poly = PolynomialFeatures(degree=degree, include_bias=False)
+    X_ = poly.fit_transform(X)
+
+    lm = LinearRegression(fit_intercept=fit_intercept)
+    lm = lm.fit(X=X_, y=y)
 
     coef_values = lm.coef_.reshape((-1,))
-    coef_names = X.columns.tolist()
+    coef_names = _get_feature_names(poly, X)
     if fit_intercept:
         coef_values = np.insert(coef_values, 0, lm.intercept_)
         coef_names = ["intercept"] + coef_names
@@ -127,48 +146,49 @@ def _fit(X, y, fit_intercept=True):
     return coefficients
 
 
-def _predict(coefficients, X):
+def _predict(X, coefficients, degree):
     """Predict outcome using the fitted model and new data.
 
     Args:
-        coefficients (pd.DataFrame): The named coefficient values.
         X (pd.DataFrame): New data on features.
+        coefficients (pd.DataFrame): The named coefficient values.
+        degree (int): Degree of the polynomial model.
+
 
     Returns:
         predictions (np.array): The predicted outcomes.
 
     """
-    _assert_input_predict(coefficients, X)
+    poly = PolynomialFeatures(degree=degree, include_bias=False)
+    X_ = poly.fit_transform(X)
 
-    coef = coefficients[1:]  # drop intercept
-    coef = coef.loc[X.columns, :]  # sort coefficients according to data
+    has_intercept = coefficients.index[0] == "intercept"
+    if has_intercept:
+        intercept = coefficients.loc["intercept", "value"]
+        coef = coefficients.drop("intercept")
+    else:
+        coef = coefficients
 
-    predictions = coefficients.loc["intercept", "value"] + X.dot(coef)
+    coef = coef.reindex(_get_feature_names(poly=poly, X=X))  # sort coefficients
 
-    predictions = predictions.values.reshape((-1,))
+    predictions = X_.dot(coef)
+    predictions = predictions.reshape((-1,))
+    predictions = predictions + intercept if has_intercept else predictions
+
     return predictions
 
 
-def _assert_input_predict(coefficients, X):
-    """
-
-    Args:
-        coefficients:
-        X:
-
-    Returns:
-
-    """
-    return True
-
-
-def _save(coefficients, filename, overwrite):
+def _save(coefficients, degree, filename, overwrite):
     """Save fitted model to disc.
 
-    Save the fitted coefficents to disc as a csv file.
+    Save the fitted coefficents to disc as a csv file. Since the number of degrees of
+    the polynomial is important we create a new row with name "<--degree-->" and value
+    ``degree``. We choose the weird name so that the chance is low that a standard
+    feature name is equal to it.
 
     Args:
         coefficients (pd.DataFrame): The named coefficient values.
+        degree (int): Degree of the polynomial model.
         filename (str): File path.
         overwrite (bool): Should the file be overwritten if it exists.
 
@@ -176,9 +196,12 @@ def _save(coefficients, filename, overwrite):
         None
 
     """
+    out = coefficients.copy()
+    out.loc["<--degree-->"] = degree
+
     file_present = glob.glob(filename)
     if overwrite or not file_present:
-        coefficients.to_csv(filename)
+        out.to_csv(filename)
     else:
         warnings.warn("File already exists. No actions taken.", UserWarning)
 
@@ -187,10 +210,12 @@ def _load(filename):
     """Load a fitted model from disc.
 
      Load fitted coefficients stored as a csv from disc and return them. Will
-     work on files created by method ``_save``, but also files manually created
+     work on files created by method ``save``, but also files manually created
      with first named column "coefficient", which will be set as the index.
      For correct functionality of the other functions the second column needs
-     to be called "value".
+     to be called "value". If the file to load was not created using the ``save``
+     method one has to manually add a row with name "<--degree-->" and value equal to
+     the degree of the polynomial which correspond to the coefficients.
 
     Args:
         filename (str): File path.
@@ -206,6 +231,8 @@ def _load(filename):
     try:
         coefficients = pd.read_csv(filename, index_col="coefficient")
         assert set(coefficients.columns) == {"value"}
+        degree = int(coefficients.loc["<--degree-->"])
+        coefficients = coefficients.drop("<--degree-->")
     except ValueError:
         raise ValueError(
             "Columns have wrong names. One column has to be"
@@ -213,4 +240,19 @@ def _load(filename):
             "and one column has to be called 'value', containing"
             "coefficient values."
         )
-    return coefficients
+    return coefficients, degree
+
+
+def _get_feature_names(poly, X):
+    """Extract feature names of polynomial features.
+
+    Args:
+        poly: fitted ``sklearn.preprocessing.PolynomialFeatures`` object.
+        X (pd.DataFrame): Data on features.
+
+    Returns:
+        coef_names (list): List of feature names corresponding to all polynomials.
+    """
+    coef_names = poly.get_feature_names(X.columns)
+    coef_names = [name.replace(" ", ":") for name in coef_names]
+    return coef_names
