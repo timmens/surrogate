@@ -50,4 +50,5 @@ def load_testing_data():
     """Return training features and complete data frame as pandas.DataFrames."""
     df = pickle.load(open(ppj("OUT_DATA", "data_test.pkl"), "rb"))
     X = extract_features_from_data(df)
-    return X, df
+    y = extract_outcome_from_data(df)
+    return X, y, df

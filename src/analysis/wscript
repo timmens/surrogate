@@ -33,3 +33,14 @@ def build(ctx):
         ],
         name="predict",
     )
+
+    # evaluate
+    ctx(
+        features="run_py_script",
+        source="evaluate.py",
+        deps=ctx.path_to(ctx, "OUT_DATA", "predictions.pkl"),
+        target=[
+            ctx.path_to(ctx, "OUT_DATA", "losses.csv"),
+        ],
+        name="evaluate",
+    )

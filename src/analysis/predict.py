@@ -14,7 +14,7 @@ if __name__ == "__main__":
     surrogates = load_implemented_models()
     surrogate_classes = get_surrogate_instances(surrogates)
 
-    X, df = load_testing_data()
+    X, _, _ = load_testing_data()
     predictions = []
     for i, surrogate in enumerate(surrogate_classes):
         surrogate.load(ppj("OUT_ANALYSIS", surrogates[i] + ".csv"))
@@ -22,6 +22,6 @@ if __name__ == "__main__":
         predictions.append(prediction.reshape((-1, 1)))
 
     prediction_array = np.concatenate(predictions, axis=1)
-    out_predictions = pd.DataFrame(prediction_array, columns=surrogates)
+    out = pd.DataFrame(prediction_array, columns=surrogates)
 
-    pickle.dump(out_predictions, open(ppj("OUT_DATA", "predictions.pkl"), "wb"))
+    pickle.dump(out, open(ppj("OUT_DATA", "predictions.pkl"), "wb"))
