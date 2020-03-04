@@ -4,7 +4,6 @@ import pathlib
 import warnings
 
 from bld.project_paths import project_paths_join as ppj
-from src.model_code.polynomialregression import PolynomialRegression
 
 
 def load_implemented_models(ignore=("__init__", "surrogate")):
@@ -45,12 +44,6 @@ def _extract_filename_from_path(file):
     f = file.split("/")[-1]
     f = f.split(".")[0]
     return f
-
-
-def get_model_class_from_string(model):
-    """Initiates a instance of class *model* and returns it."""
-    m = PolynomialRegression()
-    return m
 
 
 def get_model_class_names(models):

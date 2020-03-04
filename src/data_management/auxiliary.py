@@ -39,8 +39,15 @@ def extract_outcome_from_data(df, outcome=1):
 
 
 def load_training_data():
-    """Return training features and outcomess as pandas.DataFrame and pandas.Series."""
+    """Return training features and outcomes as pandas.DataFrame and pandas.Series."""
     df = pickle.load(open(ppj("OUT_DATA", "data_train.pkl"), "rb"))
     X = extract_features_from_data(df)
     y = extract_outcome_from_data(df)
     return X, y
+
+
+def load_testing_data():
+    """Return training features and complete data frame as pandas.DataFrames."""
+    df = pickle.load(open(ppj("OUT_DATA", "data_test.pkl"), "rb"))
+    X = extract_features_from_data(df)
+    return X, df

@@ -10,6 +10,7 @@ def build(ctx):
 
     models = load_implemented_models()
 
+    # fit
     ctx(
         features="run_py_script",
         source="fit.py",
@@ -19,15 +20,16 @@ def build(ctx):
         ],
         name="fit",
     )
-    #ctx(
-    #    features="run_py_script",
-    #    source="predict.py",
-    #    deps=[ctx.path_to(ctx, "OUT_DATA", "data_test.pkl")] + [
-    #        ctx.path_to(ctx, "OUT_DATA", model) for model in models
-    #    ],
-    #    target=[
-    #        ctx.path_to(ctx, "OUT_ANALYSIS", "predictions.pkl"),
-    #        ctx.path_to(ctx, "OUT_ANALYSIS", "data_test_full.pkl")
-    #    ],
-    #    name="predict",
-    #)
+
+    # predict
+    ctx(
+        features="run_py_script",
+        source="predict.py",
+        deps=[ctx.path_to(ctx, "OUT_DATA", "data_test.pkl")] + [
+            ctx.path_to(ctx, "OUT_ANALYSIS", model + ".csv") for model in models
+        ],
+        target=[
+            ctx.path_to(ctx, "OUT_DATA", "predictions.pkl"),
+        ],
+        name="predict",
+    )
