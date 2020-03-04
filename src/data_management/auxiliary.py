@@ -3,6 +3,9 @@
 Here we assume that the original data frame has its outcomes labelled by having
 "qoi_" at the beginning of the column name.
 """
+import pickle
+
+from bld.project_paths import project_paths_join as ppj
 
 
 def extract_features_from_data(df):
@@ -33,3 +36,11 @@ def extract_outcome_from_data(df, outcome=1):
     """
     outcome_column = "qoi_tuition_subsidy_" + str(500 * outcome)
     return df[outcome_column].values
+
+
+def load_training_data():
+    """Return training features and outcomess as pandas.DataFrame and pandas.Series."""
+    df = pickle.load(open(ppj("OUT_DATA", "data_train.pkl"), "rb"))
+    X = extract_features_from_data(df)
+    y = extract_outcome_from_data(df)
+    return X, y
