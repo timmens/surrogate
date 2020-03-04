@@ -1,23 +1,33 @@
 #! python
+"""
+TODO: Check filetypes of saved models. (line 20)
+"""
+
+from src.auxiliary.auxiliary import load_implemented_models
 
 
 def build(ctx):
 
-    for model in "baseline", "max_moves_2":
+    models = load_implemented_models()
 
-        # Illustrate use of run_py_script with automatic model specification.
-        ctx(
-            features="run_py_script",
-            source="schelling.py",
-            deps=[
-                ctx.path_to(ctx, "OUT_DATA", "initial_locations.csv"),
-                ctx.path_to(ctx, "IN_MODEL_CODE", "agent.py"),
-                ctx.path_to(ctx, "IN_MODEL_SPECS", f"{model}.json"),
-            ],
-            target=[
-                ctx.path_to(ctx, "OUT_ANALYSIS", f"schelling_{model}.pickle"),
-                ctx.path_to(ctx, "OUT_ANALYSIS", "log", f"schelling_{model}.log"),
-            ],
-            append=model,
-            name=f"schelling_{model}",
-        )
+    ctx(
+        features="run_py_script",
+        source="fit.py",
+        deps=ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
+        target=[
+            ctx.path_to(ctx, "OUT_ANALYSIS", model + ".csv") for model in models
+        ],
+        name="fit",
+    )
+    #ctx(
+    #    features="run_py_script",
+    #    source="predict.py",
+    #    deps=[ctx.path_to(ctx, "OUT_DATA", "data_test.pkl")] + [
+    #        ctx.path_to(ctx, "OUT_DATA", model) for model in models
+    #    ],
+    #    target=[
+    #        ctx.path_to(ctx, "OUT_ANALYSIS", "predictions.pkl"),
+    #        ctx.path_to(ctx, "OUT_ANALYSIS", "data_test_full.pkl")
+    #    ],
+    #    name="predict",
+    #)
