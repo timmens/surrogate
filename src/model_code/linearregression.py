@@ -16,6 +16,7 @@ class LinearRegression(Surrogate):
     def __init__(self):
         self.coefficients = None
         self.is_fitted = False
+        self.file_type = ".csv"
         super().__init__()
 
     def fit(self, X, y, **kwargs):
@@ -94,6 +95,11 @@ class LinearRegression(Surrogate):
         self.is_fitted = True
 
         return self
+
+    @property
+    def name(self):
+        """Return name of class as string."""
+        return self.__class__.__name__
 
 
 def _fit(X, y, fit_intercept=True):

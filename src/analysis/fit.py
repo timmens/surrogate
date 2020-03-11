@@ -1,7 +1,4 @@
-"""Load implemented models and fit to training data set.
-
-TODO: line 30, file endings dynamic.
-"""
+"""Load implemented models and fit to training data set."""
 from bld.project_paths import project_paths_join as ppj
 from src.analysis.auxiliary import get_surrogate_instances
 from src.auxiliary.auxiliary import get_model_class_names
@@ -20,4 +17,4 @@ if __name__ == "__main__":
 
     for i, surrogate in enumerate(surrogate_classes):
         surrogate.fit(X, y, **surrogate_params[surrogate_class_names[i]])
-        surrogate.save(ppj("OUT_ANALYSIS", surrogates[i] + ".csv"), overwrite=True)
+        surrogate.save(ppj("OUT_ANALYSIS", surrogates[i]), overwrite=True)

@@ -1,5 +1,6 @@
 """Polynomial regression surrogate model."""
 import glob
+import os
 import warnings
 
 import numpy as np
@@ -18,6 +19,7 @@ class PolynomialRegression(Surrogate):
         self.degree = None
         self.coefficients = None
         self.is_fitted = False
+        self.file_type = ".csv"
         super().__init__()
 
     def fit(self, X, y, **kwargs):
@@ -75,17 +77,19 @@ class PolynomialRegression(Surrogate):
         as a csv file. Can be loaded afterwards using the method ``load``.
 
         Args:
-            filename (str): File path, has to end with ".csv".
+            filename (str): File path except file type ending. If file type ending is
+                provided it will be ignored.
             overwrite (bool): Should the file be overwritten if it exists.
 
         Returns:
             None
 
         """
+        file_path, file_type = os.path.splitext(filename)
         _save(
             coefficients=self.coefficients,
             degree=self.degree,
-            filename=filename,
+            filename=file_path + self.file_type,
             overwrite=overwrite,
         )
 
@@ -98,18 +102,25 @@ class PolynomialRegression(Surrogate):
         and second column "value".
 
         Args:
-            filename (str): File path.
+            filename (str): File path except file type ending. If file type ending is
+                provided it will be ignored.
 
         Returns:
             None
 
         """
-        coefficients, degree = _load(filename)
+        file_path, file_type = os.path.splitext(filename)
+        coefficients, degree = _load(file_path + self.file_type)
         self.coefficients = coefficients
         self.degree = degree
         self.is_fitted = True
 
         return self
+
+    @property
+    def name(self):
+        """Return name of class as string."""
+        return self.__class__.__name__
 
 
 def _fit(X, y, degree, fit_intercept=False):

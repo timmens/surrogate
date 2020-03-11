@@ -66,6 +66,12 @@ class Surrogate(ABC):
         """
         pass
 
+    @property
+    @abstractmethod
+    def name(self):
+        """Return name of surrogate class as string."""
+        return self.__class__.__name__
+
 
 def assert_input_fit(X, y):
     """

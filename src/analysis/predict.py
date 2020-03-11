@@ -17,7 +17,7 @@ if __name__ == "__main__":
     X, _, _ = load_testing_data()
     predictions = []
     for i, surrogate in enumerate(surrogate_classes):
-        surrogate.load(ppj("OUT_ANALYSIS", surrogates[i] + ".csv"))
+        surrogate.load(ppj("OUT_ANALYSIS", surrogates[i]))
         prediction = surrogate.predict(X)
         predictions.append(prediction.reshape((-1, 1)))
 
