@@ -10,6 +10,7 @@ from sklearn.preprocessing import PolynomialFeatures
 
 from src.model_code.surrogate import assert_input_fit
 from src.model_code.surrogate import Surrogate
+from src.model_code.utilities import get_feature_names
 
 
 class PolynomialRegression(Surrogate):
@@ -145,7 +146,7 @@ def _fit(X, y, degree, fit_intercept=False):
     lm = lm.fit(X=X_, y=y)
 
     coef_values = lm.coef_.reshape((-1,))
-    coef_names = _get_feature_names(poly, X)
+    coef_names = get_feature_names(poly, X)
     if fit_intercept:
         coef_values = np.insert(coef_values, 0, lm.intercept_)
         coef_names = ["intercept"] + coef_names
@@ -180,7 +181,7 @@ def _predict(X, coefficients, degree):
     else:
         coef = coefficients
 
-    coef = coef.reindex(_get_feature_names(poly=poly, X=X))  # sort coefficients
+    coef = coef.reindex(get_feature_names(poly=poly, X=X))  # sort coefficients
 
     predictions = X_.dot(coef)
     predictions = predictions.reshape((-1,))
@@ -252,18 +253,3 @@ def _load(filename):
             "coefficient values."
         )
     return coefficients, degree
-
-
-def _get_feature_names(poly, X):
-    """Extract feature names of polynomial features.
-
-    Args:
-        poly: fitted ``sklearn.preprocessing.PolynomialFeatures`` object.
-        X (pd.DataFrame): Data on features.
-
-    Returns:
-        coef_names (list): List of feature names corresponding to all polynomials.
-    """
-    coef_names = poly.get_feature_names(X.columns)
-    coef_names = [name.replace(" ", ":") for name in coef_names]
-    return coef_names
