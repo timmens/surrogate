@@ -1,20 +1,24 @@
 #! python
-"""
-TODO: Check filetypes of saved models. (line 20)
-"""
 
-from src.auxiliary.auxiliary import load_implemented_models
+from src.auxiliary.auxiliary import load_surrogates_specs
 
 
 def build(ctx):
 
-    models = load_implemented_models()
+    specs = load_surrogates_specs()
+    models = specs.keys()
 
     # fit
     ctx(
         features="run_py_script",
         source="fit.py",
-        deps=ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
+        deps=[
+            ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
+            ctx.path_to(ctx, "IN_MODEL_CODE", "linearregression.py"),
+            ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
+            ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
+            ctx.path_to(ctx, "IN_MODEL_SPECS", "params_fit.json")
+        ],
         target=[
             ctx.path_to(ctx, "OUT_ANALYSIS", model + ".csv") for model in models
         ],
@@ -27,6 +31,8 @@ def build(ctx):
         source="predict.py",
         deps=[ctx.path_to(ctx, "OUT_DATA", "data_test.pkl")] + [
             ctx.path_to(ctx, "OUT_ANALYSIS", model + ".csv") for model in models
+        ] + [
+            ctx.path_to(ctx, "IN_ANALYSIS", "fit.py")
         ],
         target=[
             ctx.path_to(ctx, "OUT_DATA", "predictions.pkl"),
@@ -38,9 +44,29 @@ def build(ctx):
     ctx(
         features="run_py_script",
         source="evaluate.py",
-        deps=ctx.path_to(ctx, "OUT_DATA", "predictions.pkl"),
+        deps=[
+            ctx.path_to(ctx, "OUT_DATA", "predictions.pkl"),
+            ctx.path_to(ctx, "IN_ANALYSIS", "fit.py"),
+        ],
         target=[
             ctx.path_to(ctx, "OUT_DATA", "losses.csv"),
         ],
         name="evaluate",
     )
+
+    # bootstrap
+    # ctx(
+    #     features="run_py_script",
+    #     source="bootstrap.py",
+    #     deps=[
+    #         ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
+    #         ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
+    #         ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
+    #         ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
+    #         ctx.path_to(ctx, "IN_MODEL_SPECS", "params_fit.json")
+    #     ],
+    #     target=[
+    #         ctx.path_to(ctx, "OUT_ANALYSIS", "bootstrap_mae_" + model + ".csv") for model in ['polynomial', 'ridge']
+    #     ],
+    #     name="bootstrap",
+    # )

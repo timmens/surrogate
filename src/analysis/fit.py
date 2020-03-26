@@ -1,20 +1,35 @@
-"""Load implemented models and fit to training data set."""
+"""Load specified models and fit to training data set."""
 from bld.project_paths import project_paths_join as ppj
-from src.analysis.auxiliary import get_surrogate_instances
-from src.auxiliary.auxiliary import get_model_class_names
-from src.auxiliary.auxiliary import load_implemented_models
-from src.auxiliary.auxiliary import load_surrogate_fit_params
-from src.data_management.auxiliary import load_training_data
+from src.auxiliary.auxiliary import get_surrogate_instances
+from src.auxiliary.auxiliary import load_sorted_features
+from src.auxiliary.auxiliary import load_surrogates_specs
+from src.data_management.utilities import load_training_data
 
 
 if __name__ == "__main__":
 
-    surrogates = load_implemented_models()
-    surrogate_class_names = get_model_class_names(surrogates)
-    surrogate_classes = get_surrogate_instances(surrogates)
-    X, y = load_training_data()
-    surrogate_params = load_surrogate_fit_params()
+    # load dictionary of model specifications
+    specs = load_surrogates_specs()
 
-    for i, surrogate in enumerate(surrogate_classes):
-        surrogate.fit(X, y, **surrogate_params[surrogate_class_names[i]])
-        surrogate.save(ppj("OUT_ANALYSIS", surrogates[i]), overwrite=True)
+    # extract model names
+    names = [specs[key]["model"] for key in specs.keys()]
+
+    # extract model fit kwargs
+    params = [specs[key]["kwargs"] for key in specs.keys()]
+
+    # initiate model classes
+    classes = get_surrogate_instances(names)
+
+    # load training data
+    X, y = load_training_data(seed=1)
+
+    # load order of importance of features
+    ordered_features = load_sorted_features()
+
+    for key, kwargs, model in zip(list(specs.keys()), params, classes):
+        features = specs[key]["features"]
+        features = features if features != 0 else len(ordered_features)
+        feature_list = ordered_features[:features]
+
+        model.fit(X[feature_list], y, **kwargs)
+        model.save(ppj("OUT_ANALYSIS", key), overwrite=True)

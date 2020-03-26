@@ -3,19 +3,28 @@
 
 def build(ctx):
 
-    for model in "baseline", "max_moves_2":
+    ctx(
+        features="run_py_script",
+        source="assemble_predictions.py",
+        deps=[
+            ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "predictions.pkl"),
+        ],
+        target=[
+            ctx.path_to(ctx, "OUT_DATA", "data_with_predictions.pkl"),
+        ],
+        name="assemble_predictions",
+    )
 
-        ctx(
-            features="run_py_script",
-            source="plot_locations.py",
-            deps=[
-                ctx.path_to(ctx, "OUT_ANALYSIS", f"schelling_{model}.pickle"),
-                ctx.path_to(ctx, "IN_MODEL_SPECS", f"{model}.json"),
-            ],
-            target=ctx.path_to(ctx, "OUT_FIGURES", f"schelling_{model}.png"),
-            append=model,
-            name=f"plot_locations_{model}",
-        )
+    ctx(
+        features="run_py_script",
+        source="move_to_cloud.py",
+        deps=[
+            ctx.path_to(ctx, "IN_FINAL", "assemble_predictions.py"),
+            ctx.path_to(ctx, "OUT_DATA", "data_with_predictions.pkl"),
+        ],
+        name="assemble_predictions",
+    )
 
     from src.final.project_dependency_graph import make_project_dependency_graph
 

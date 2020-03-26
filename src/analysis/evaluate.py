@@ -8,8 +8,8 @@ from sklearn.metrics import median_absolute_error
 
 from bld.project_paths import project_paths_join as ppj
 from src.analysis.auxiliary import compute_loss_given_metrics
-from src.auxiliary.auxiliary import load_implemented_models
-from src.data_management.auxiliary import load_testing_data
+from src.auxiliary.auxiliary import load_surrogates_specs
+from src.data_management.utilities import load_testing_data
 
 if __name__ == "__main__":
     metrics = {
@@ -18,16 +18,24 @@ if __name__ == "__main__":
         "mdae": median_absolute_error,
     }
 
-    surrogates = load_implemented_models()
-    X, y, _ = load_testing_data()
+    # load dictionary of model specifications
+    specs = load_surrogates_specs()
+
+    # extract model keys
+    keys = list(specs.keys())
+
+    # extract model names
+    names = [specs[key]["model"] for key in specs.keys()]
+
+    X, y = load_testing_data()
 
     predictions = pickle.load(open(ppj("OUT_DATA", "predictions.pkl"), "rb"))
 
     losses = {}
-    for surrogate in surrogates:
-        prediction = predictions[[surrogate]].values
+    for key in keys:
+        prediction = predictions[[key]].values
         loss = compute_loss_given_metrics(y, prediction, metrics)
-        losses[surrogate] = loss
+        losses[key] = loss
 
     df = pd.DataFrame(losses)
     tidy = (

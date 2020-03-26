@@ -5,7 +5,7 @@ def build(ctx):
 
     ctx(
         features="run_py_script",
-        source="create_train_test_set.py",
+        source="train_test_split.py",
         deps=[
             ctx.path_to(ctx, "IN_DATA", "data.pkl"),
         ],
@@ -13,5 +13,17 @@ def build(ctx):
             ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
             ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
         ],
-        name="create_train_test_set",
+        name="train_test_split",
+    )
+
+    ctx(
+        features="run_py_script",
+        source="feature_importance.py",
+        deps=[
+            ctx.path_to(ctx, "IN_DATA", "kw_indices.pkl"),
+        ],
+        target=[
+            ctx.path_to(ctx, "OUT_DATA", "sorted_features.csv"),
+        ],
+        name="feature_importance",
     )

@@ -25,7 +25,9 @@ class LinearRegression(Surrogate):
         Args:
             X (pd.DataFrame): Data on features.
             y (pd.Series or np.ndarray): Data on outcomes.
-            **kwargs: 'fit_intercept' (bool): Should an intercept be fitted.
+            **kwargs:
+                - 'fit_intercept' (bool): Should an intercept be fitted.
+                - 'n_jobs' (int): Number of jobs to use for parallelization.
 
         Returns:
             self: The fitted LinearRegression object,
@@ -102,13 +104,14 @@ class LinearRegression(Surrogate):
         return self.__class__.__name__
 
 
-def _fit(X, y, fit_intercept=True):
+def _fit(X, y, fit_intercept=True, n_jobs=1):
     """Fit a linear model using least squares.
 
     Args:
         X (pd.DataFrame): Data on features.
         y (pd.Series or np.ndarray): Data on outcomes.
         fit_intercept (bool): Should an intercept be fitted.
+        'n_jobs' (int): Number of jobs to use for parallelization.
 
     Returns:
         coefficients (pd.DataFrame): The named coefficient values.
@@ -117,7 +120,7 @@ def _fit(X, y, fit_intercept=True):
     assert_input_fit(X=X, y=y)
     XX = np.array(X)
 
-    lm = LinReg(fit_intercept=fit_intercept)
+    lm = LinReg(fit_intercept=fit_intercept, n_jobs=n_jobs)
     lm = lm.fit(X=XX, y=y)
 
     coef_values = lm.coef_.reshape((-1,))

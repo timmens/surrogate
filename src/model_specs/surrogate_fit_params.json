@@ -1,9 +1,0 @@
-{
-  "LinearRegression": {
-    "fit_intercept": true
-  },
-  "PolynomialRegression": {
-    "degree": 2,
-    "fit_intercept": true
-  }
-}

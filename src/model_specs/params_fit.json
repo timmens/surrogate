@@ -1,0 +1,74 @@
+{
+  "linreg": {
+    "model": "polynomialregression",
+    "features": 0,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg": {
+    "model": "polynomialregression",
+    "features": 0,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg5": {
+    "model": "polynomialregression",
+    "features": 5,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg10": {
+    "model": "polynomialregression",
+    "features": 10,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg15": {
+    "model": "polynomialregression",
+    "features": 15,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg20": {
+    "model": "polynomialregression",
+    "features": 20,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg25": {
+    "model": "polynomialregression",
+    "features": 25,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg27": {
+    "model": "polynomialregression",
+    "features": 27,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  }
+}

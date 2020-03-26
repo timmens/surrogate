@@ -5,12 +5,15 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from joblib import dump
+from joblib import load
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import StandardScaler
 
+from src.data_management.utilities import get_feature_names
 from src.model_code.surrogate import assert_input_fit
 from src.model_code.surrogate import Surrogate
-from src.model_code.utilities import get_feature_names
 
 
 class PolynomialRegression(Surrogate):
@@ -19,6 +22,7 @@ class PolynomialRegression(Surrogate):
     def __init__(self):
         self.degree = None
         self.coefficients = None
+        self.scaler = None
         self.is_fitted = False
         self.file_type = ".csv"
         super().__init__()
@@ -36,15 +40,17 @@ class PolynomialRegression(Surrogate):
             **kwargs:
                 - 'degree' (int): Degree of the polynomial model.
                 - 'fit_intercept' (bool): Should an intercept be fitted.
+                - 'n_jobs' (int): Number of jobs to use for parallelization.
 
         Returns:
             self: The fitted PolynomailRegression object.
 
         """
-        coefficients = _fit(X=X, y=y, **kwargs)
+        model = _fit(X=X, y=y, **kwargs)
 
         self.degree = kwargs["degree"]
-        self.coefficients = coefficients
+        self.coefficients = model["coefficients"]
+        self.scaler = model["scaler"]
         self.is_fitted = True
 
         return self
@@ -68,7 +74,9 @@ class PolynomialRegression(Surrogate):
             warnings.warn("The model has not been fitted yet.", UserWarning)
             return None
 
-        predictions = _predict(X=X, coefficients=self.coefficients, degree=self.degree)
+        predictions = _predict(
+            X=X, coefficients=self.coefficients, scaler=self.scaler, degree=self.degree
+        )
         return predictions
 
     def save(self, filename, overwrite=False):
@@ -90,7 +98,9 @@ class PolynomialRegression(Surrogate):
         _save(
             coefficients=self.coefficients,
             degree=self.degree,
-            filename=file_path + self.file_type,
+            scaler=self.scaler,
+            file_path=file_path,
+            format=self.file_type,
             overwrite=overwrite,
         )
 
@@ -111,9 +121,11 @@ class PolynomialRegression(Surrogate):
 
         """
         file_path, file_type = os.path.splitext(filename)
-        coefficients, degree = _load(file_path + self.file_type)
-        self.coefficients = coefficients
-        self.degree = degree
+        model = _load(file_path, self.file_type)
+
+        self.coefficients = model["coefficients"]
+        self.scaler = model["scaler"]
+        self.degree = model["degree"]
         self.is_fitted = True
 
         return self
@@ -124,7 +136,7 @@ class PolynomialRegression(Surrogate):
         return self.__class__.__name__
 
 
-def _fit(X, y, degree, fit_intercept=False):
+def _fit(X, y, degree, fit_intercept=False, n_jobs=1):
     """Fit a polynomial regression model using least squares.
 
     Args:
@@ -132,9 +144,12 @@ def _fit(X, y, degree, fit_intercept=False):
         y (pd.Series or np.ndarray): Data on outcomes.
         degree (int): Degree of the polynomial model.
         fit_intercept (bool): Should an intercept be fitted.
+        'n_jobs' (int): Number of jobs to use for parallelization.
 
     Returns:
-        coefficients (pd.DataFrame): The named coefficient values.
+        out (dict): Output dictionary containing:
+            - coefficients (pd.DataFrame): The named coefficient values.
+            - scaler (sklearn.preprocessing.StandardScaler): Fitted scaler.
 
     """
     assert_input_fit(X=X, y=y)
@@ -142,8 +157,12 @@ def _fit(X, y, degree, fit_intercept=False):
     poly = PolynomialFeatures(degree=degree, include_bias=False)
     X_ = poly.fit_transform(X)
 
-    lm = LinearRegression(fit_intercept=fit_intercept)
-    lm = lm.fit(X=X_, y=y)
+    scaler = StandardScaler()
+    scaler = scaler.fit(X_)
+    XX_ = scaler.transform(X_)
+
+    lm = LinearRegression(fit_intercept=fit_intercept, n_jobs=n_jobs)
+    lm = lm.fit(X=XX_, y=y)
 
     coef_values = lm.coef_.reshape((-1,))
     coef_names = get_feature_names(poly, X)
@@ -155,14 +174,19 @@ def _fit(X, y, degree, fit_intercept=False):
         data=zip(coef_names, coef_values), columns=["coefficient", "value"]
     ).set_index("coefficient")
 
-    return coefficients
+    out = {
+        "coefficients": coefficients,
+        "scaler": scaler,
+    }
+    return out
 
 
-def _predict(X, coefficients, degree):
+def _predict(X, scaler, coefficients, degree):
     """Predict outcome using the fitted model and new data.
 
     Args:
         X (pd.DataFrame): New data on features.
+        scaler (sklearn.preprocessing.StandardScaler): Scaler used to fit.
         coefficients (pd.DataFrame): The named coefficient values.
         degree (int): Degree of the polynomial model.
 
@@ -173,6 +197,7 @@ def _predict(X, coefficients, degree):
     """
     poly = PolynomialFeatures(degree=degree, include_bias=False)
     X_ = poly.fit_transform(X)
+    XX_ = scaler.transform(X_)
 
     has_intercept = coefficients.index[0] == "intercept"
     if has_intercept:
@@ -183,14 +208,14 @@ def _predict(X, coefficients, degree):
 
     coef = coef.reindex(get_feature_names(poly=poly, X=X))  # sort coefficients
 
-    predictions = X_.dot(coef)
+    predictions = XX_.dot(coef)
     predictions = predictions.reshape((-1,))
     predictions = predictions + intercept if has_intercept else predictions
 
     return predictions
 
 
-def _save(coefficients, degree, filename, overwrite):
+def _save(coefficients, degree, scaler, file_path, format, overwrite):
     """Save fitted model to disc.
 
     Save the fitted coefficents to disc as a csv file. Since the number of degrees of
@@ -201,7 +226,9 @@ def _save(coefficients, degree, filename, overwrite):
     Args:
         coefficients (pd.DataFrame): The named coefficient values.
         degree (int): Degree of the polynomial model.
-        filename (str): File path.
+        scaler (sklearn.preprocessing.StandardScaler): Scaler used to fit.
+        file_parth (str): File path.
+        format (str): File format of saved model coefficients.
         overwrite (bool): Should the file be overwritten if it exists.
 
     Returns:
@@ -211,14 +238,15 @@ def _save(coefficients, degree, filename, overwrite):
     out = coefficients.copy()
     out.loc["<--degree-->"] = degree
 
-    file_present = glob.glob(filename)
+    file_present = glob.glob(file_path + format)
     if overwrite or not file_present:
-        out.to_csv(filename)
+        out.to_csv(file_path + format)
+        dump(scaler, file_path + "_scaler.bin", compress=True)
     else:
         warnings.warn("File already exists. No actions taken.", UserWarning)
 
 
-def _load(filename):
+def _load(file_path, format):
     """Load a fitted model from disc.
 
      Load fitted coefficients stored as a csv from disc and return them. Will
@@ -230,7 +258,8 @@ def _load(filename):
      the degree of the polynomial which correspond to the coefficients.
 
     Args:
-        filename (str): File path.
+        file_path (str): File path.
+        format (str): Format of how model is saved. Example: format=".csv".
 
     Returns:
         coefficients (pd.DataFrame): The named coefficient values.
@@ -241,10 +270,12 @@ def _load(filename):
 
     """
     try:
-        coefficients = pd.read_csv(filename, index_col="coefficient")
+        coefficients = pd.read_csv(file_path + format, index_col="coefficient")
         assert set(coefficients.columns) == {"value"}
         degree = int(coefficients.loc["<--degree-->"])
         coefficients = coefficients.drop("<--degree-->")
+
+        scaler = load(file_path + "_scaler.bin")
     except ValueError:
         raise ValueError(
             "Columns have wrong names. One column has to be"
@@ -252,4 +283,10 @@ def _load(filename):
             "and one column has to be called 'value', containing"
             "coefficient values."
         )
-    return coefficients, degree
+
+    out = {
+        "coefficients": coefficients,
+        "scaler": scaler,
+        "degree": degree,
+    }
+    return out
