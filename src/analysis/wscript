@@ -14,6 +14,7 @@ def build(ctx):
         source="fit.py",
         deps=[
             ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "sorted_features.csv"),
             ctx.path_to(ctx, "IN_MODEL_CODE", "linearregression.py"),
             ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
             ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
