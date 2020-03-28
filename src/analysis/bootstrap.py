@@ -1,19 +1,50 @@
-"""Create data for special plots."""
-from itertools import count
-
+"""Bootstrap analysis of mae of mdoels for varying number of observations."""
 import numpy as np
 import pandas as pd
+from joblib import delayed
+from joblib import Parallel
 from sklearn.metrics import mean_absolute_error
 
 from bld.project_paths import project_paths_join as ppj
-from src.data_management.utilities import compute_testing_loss
 from src.data_management.utilities import load_testing_data
 from src.data_management.utilities import load_training_data
 from src.model_code.polynomialregression import PolynomialRegression
 from src.model_code.ridgeregression import RidgeRegression
 
 
-def bootstrap_metric_varying_sample_size(nobs, nsamples, model, metric, seed):
+def _bootstrap(n_samples, n_obs_list, models_params, metric, n_jobs, seed):
+    """
+
+    Args:
+        n_samples:
+        n_obs_list:
+        models_params:
+        metric:
+        n_jobs:
+        seed:
+
+    Returns:
+
+    """
+    out = {}
+    for key, params in models_params.items():
+        result = _bootstrap_single_model(
+            n_samples=n_samples,
+            n_obs_list=n_obs_list,
+            model=params["model"],
+            fit_kwargs=params["fit_kwargs"],
+            metric=metric,
+            n_jobs=n_jobs,
+            seed=seed,
+        )
+        out[key] = result
+
+    return out
+
+
+def _bootstrap_single_model(
+    n_samples, n_obs_list, model, fit_kwargs, metric, n_jobs, seed
+):
     """Compute metric for model for varying sample size.
 
     Compute the mean absolute error on the test sample for varying
@@ -26,6 +57,7 @@ def bootstrap_metric_varying_sample_size(nobs, nsamples, model, metric, seed):
         nsamples (int): Number of bootstrap draws for each number
             of observations.
         model (Model object): A model from ``src.model_code``.
+        fit_kwargs (dict): Parameters used in ``fit`` method of ``model``.
         metric (function): A metric from ``sklearn.metrics``.
         seed (int): Random number seed.
 
@@ -34,40 +66,90 @@ def bootstrap_metric_varying_sample_size(nobs, nsamples, model, metric, seed):
             "n" and "mae".
 
     """
-    counter = count(seed)
-
     Xtest, ytest = load_testing_data()
+    X, y = load_training_data()
 
-    curves = np.empty((nsamples, len(nobs)))
-    for i in range(nsamples):
-        for j, n in enumerate(nobs):
-            X, y = load_training_data(nobs=n, seed=next(counter))
-            model.fit(X, y, degree=2)
-            error = compute_testing_loss(
-                model=model, ytest=ytest, Xtest=Xtest, measure=metric
-            )
-            curves[i, j] = error
+    def to_parallelize(k):
+        """Wrapper function over which we parallelize."""
+        result = np.empty(len(n_obs_list))
+        for i, n in enumerate(n_obs_list):
+            index = _compute_subset_index(max_length=X.shape[0], size=n, seed=seed + k)
+            XX, yy = X.iloc[index, :], y[index]
 
-    df = pd.DataFrame(curves, columns=nobs)
+            m = model()
+            m.fit(XX, yy, **fit_kwargs)
+
+            ypred = m.predict(Xtest)
+            loss = metric(ytest, ypred)
+
+            result[i] = loss
+
+        return result
+
+    data = Parallel(n_jobs=n_jobs, prefer="processes")(
+        delayed(to_parallelize)(i) for i in range(n_samples)
+    )
+    data_tabular = np.stack(data)
+
+    df = pd.DataFrame(data_tabular, columns=n_obs_list)
 
     df_tidy = df.melt(var_name="n", value_name="mae")
     return df_tidy
 
 
+def _compute_subset_index(max_length, size, seed):
+    """Sample elements from index with replacement.
+
+    Sample elements from object which can be cast to a np.ndarray
+    with replacement and return the resulting index as a pd.Index.
+
+    Args:
+        index (pd.Index, np.ndarray, list): Index from which to sample.
+        n (int): Number of indices to sample.
+        seed (int): Random number seed.
+
+    Returns:
+        indices (list): List containing indices to subset the
+            training data set.
+
+    """
+    np.random.seed(seed)
+
+    index = pd.Index(
+        np.random.choice(range(max_length), size=size, replace=False)
+    ).sort_values()
+    return index
+
+
 if __name__ == "__main__":
-    NOBS = [500, 1000, 2500, 5000, 10000]
-    NSAMPLES = 25
+    # models we want to evaulate using the (some) bootstrap
+    models = {
+        "linreg": {
+            "model": PolynomialRegression,
+            "fit_kwargs": {"degree": 1, "fit_intercept": True},
+        },
+        "polreg": {
+            "model": PolynomialRegression,
+            "fit_kwargs": {"degree": 2, "fit_intercept": True},
+        },
+        "ridgereg": {
+            "model": RidgeRegression,
+            "fit_kwargs": {"degree": 2, "fit_intercept": True},
+        },
+    }
 
-    pr = PolynomialRegression()
-    rr = RidgeRegression()
+    # data parameters
+    n_obs = [100, 200, 300, 400, 500, 1000, 2000, 5000, 10000, 20000, 50000]
 
-    df_mae_polynomial = bootstrap_metric_varying_sample_size(
-        nobs=NOBS, nsamples=NSAMPLES, model=pr, metric=mean_absolute_error, seed=1
+    data = _bootstrap(
+        n_samples=50,
+        n_obs_list=n_obs,
+        models_params=models,
+        metric=mean_absolute_error,
+        n_jobs=4,
+        seed=1,
     )
+    df = pd.concat(data, axis=0)
 
-    df_mae_ridge = bootstrap_metric_varying_sample_size(
-        nobs=NOBS, nsamples=NSAMPLES, model=rr, metric=mean_absolute_error, seed=1
-    )
-
-    df_mae_polynomial.to_csv(ppj("OUT_ANALYSIS", "bootstrap_mae_polynomial.csv"))
-    df_mae_ridge.to_csv(ppj("OUT_ANALYSIS", "bootstrap_mae_ridge.csv"))
+    df_tidy = df.reset_index(level=0).rename(columns={"level_0": "model"})
+    df_tidy.to_csv(ppj("OUT_ANALYSIS", "bootstrap_mae.csv"), index=False)
