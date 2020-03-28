@@ -26,6 +26,18 @@ def build(ctx):
         name="assemble_predictions",
     )
 
+    # ctx(
+    #     features="run_py_script",
+    #     source="bootstrap_plot.py",
+    #     deps=[
+    #         ctx.path_to(ctx, "OUT_DATA", "bootstrap_mae.csv")
+    #     ],
+    #     target=[
+    #         ctx.path_to(ctx, "OUT_FIGURES", "bootstrap_mae.pdf")
+    #     ],
+    #     name="boostrap_plot",
+    # )
+
     from src.final.project_dependency_graph import make_project_dependency_graph
 
     ctx.add_post_fun(make_project_dependency_graph)

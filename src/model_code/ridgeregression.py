@@ -52,8 +52,6 @@ class RidgeRegression(Surrogate):
             self: The fitted PolynomailRegression object.
 
         """
-        _assert_fit_kwargs(**kwargs)
-
         result = _fit(X=X, y=y, **kwargs)
 
         self.degree = kwargs["degree"]
@@ -311,7 +309,3 @@ def _load(file_path, format):
         "degree": degree,
     }
     return out
-
-
-def _assert_fit_kwargs(degree, fit_intercept=None, alphas=None, threshold=None):
-    pass

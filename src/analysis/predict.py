@@ -33,9 +33,17 @@ if __name__ == "__main__":
     for key, model in zip(keys, classes):
         model.load(ppj("OUT_ANALYSIS", key))
 
-        features = specs[key]["features"]
-        features = features if features != 0 else len(ordered_features)
-        feature_list = ordered_features[:features]
+        nfeatures = specs[key]["nfeatures"]
+        if isinstance(nfeatures, int):
+            feature_list = ordered_features[:nfeatures]
+        else:
+            max_num_features = len(ordered_features)
+            num_features = int(nfeatures[len("random") :])
+            np.random.seed(seed=1)
+            feature_index = np.random.choice(
+                range(num_features), size=num_features, replace=False
+            )
+            feature_list = ordered_features[feature_index]
 
         prediction = model.predict(X[feature_list])
         predictions.append(prediction.reshape((-1, 1)))

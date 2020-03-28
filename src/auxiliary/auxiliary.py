@@ -49,11 +49,11 @@ def _extract_filename_from_path(file):
     return f
 
 
-def get_model_class_names(models):
+def get_model_class_name(model):
     """Translate model names to names of respective classes.
 
     Args:
-        models (list): List of model names.
+        model (str): Model name.
 
     Returns:
         translated (list): List model class names.
@@ -64,8 +64,35 @@ def get_model_class_names(models):
         "ridgeregression": "RidgeRegression",
     }
 
-    translated = [translation[model] for model in models]
-    return translated
+    return translation[model]
+
+
+def get_model_class_names(models):
+    """
+
+    Args:
+        models:
+
+    Returns:
+
+    """
+    return [get_model_class_name(model) for model in models]
+
+
+def get_surrogate_instance(surrogate):
+    """
+
+    Args:
+        surrogate:
+
+    Returns:
+
+    """
+    module = "src.model_code." + surrogate
+    module = importlib.import_module(module)
+    surrogate_class_name = get_model_class_name(surrogate)
+    surrogate_class = getattr(module, surrogate_class_name)()
+    return surrogate_class
 
 
 def get_surrogate_instances(surrogates):
@@ -77,14 +104,12 @@ def get_surrogate_instances(surrogates):
     Returns:
 
     """
-    module_names = ["src.model_code." + surrogate for surrogate in surrogates]
-    modules = [importlib.import_module(module) for module in module_names]
-    surrogate_class_names = get_model_class_names(surrogates)
-    surrogate_classes = [
-        getattr(modules[i], surrogate_class_names[i])() for i in range(len(surrogates))
-    ]
+    if isinstance(surrogates, list) or isinstance(surrogates, tuple):
+        out = [get_surrogate_instance(surrogate) for surrogate in surrogates]
+    else:
+        out = get_surrogate_instance(surrogates)
 
-    return surrogate_classes
+    return out
 
 
 def load_surrogates_specs():
@@ -94,7 +119,7 @@ def load_surrogates_specs():
         out (dict): Dictionary containing parameters for ``fit`` method of surrogates.
 
     """
-    with open(ppj("IN_MODEL_SPECS", "params_fit.json")) as file:
+    with open(ppj("IN_MODEL_SPECS", "model_specs.json")) as file:
         out = json.loads(file.read())
     return out
 

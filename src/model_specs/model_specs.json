@@ -1,0 +1,452 @@
+{
+  "linreg_p5_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 5,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p10_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 10,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p15_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 15,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p20_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 20,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p25_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 25,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p27_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_prandom5_n10000": {
+    "model": "polynomialregression",
+    "nfeatures": "random5",
+    "nobs": 10000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_prandom10_n10000": {
+    "model": "polynomialregression",
+    "nfeatures": "random10",
+    "nobs": 10000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_prandom20_n10000": {
+    "model": "polynomialregression",
+    "nfeatures": "random20",
+    "nobs": 10000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p27_n100": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 100,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p27_n200": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 200,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p27_n500": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 500,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p27_n1000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 1000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p27_n2000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 2000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p27_n5000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 5000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p27_n10000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 10000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p27_n20000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 20000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "linreg_p27_n50000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 50000,
+    "kwargs": {
+      "degree": 1,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p5_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 5,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p10_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 10,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p15_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 15,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p20_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 20,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p25_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 25,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p27_n75000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_prandom5_n10000": {
+    "model": "polynomialregression",
+    "nfeatures": "random5",
+    "nobs": 10000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_prandom10_n10000": {
+    "model": "polynomialregression",
+    "nfeatures": "random10",
+    "nobs": 10000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_prandom20_n10000": {
+    "model": "polynomialregression",
+    "nfeatures": "random20",
+    "nobs": 10000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p27_n100": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 100,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p27_n200": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 200,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p27_n500": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 500,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p27_n1000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 1000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p27_n2000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 2000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p27_n5000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 5000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p27_n10000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 10000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p27_n20000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 20000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "polreg_p27_n50000": {
+    "model": "polynomialregression",
+    "nfeatures": 27,
+    "nobs": 50000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true,
+      "n_jobs": 4
+    }
+  },
+  "ridgereg_p27_n100": {
+    "model": "ridgeregression",
+    "nfeatures": 27,
+    "nobs": 100,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true
+    }
+  },
+  "ridgereg_p27_n200": {
+    "model": "ridgeregression",
+    "nfeatures": 27,
+    "nobs": 200,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true
+    }
+  },
+  "ridgereg_p27_n500": {
+    "model": "ridgeregression",
+    "nfeatures": 27,
+    "nobs": 500,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true
+    }
+  },
+  "ridgereg_p27_n1000": {
+    "model": "ridgeregression",
+    "nfeatures": 27,
+    "nobs": 1000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true
+    }
+  },
+  "ridgereg_p27_n2000": {
+    "model": "ridgeregression",
+    "nfeatures": 27,
+    "nobs": 2000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true
+    }
+  },
+  "ridgereg_p27_n5000": {
+    "model": "ridgeregression",
+    "nfeatures": 27,
+    "nobs": 5000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true
+    }
+  },
+  "ridgereg_p27_n10000": {
+    "model": "ridgeregression",
+    "nfeatures": 27,
+    "nobs": 10000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true
+    }
+  },
+  "ridgereg_p27_n20000": {
+    "model": "ridgeregression",
+    "nfeatures": 27,
+    "nobs": 20000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true
+    }
+  },
+  "ridgereg_p27_n50000": {
+    "model": "ridgeregression",
+    "nfeatures": 27,
+    "nobs": 50000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true
+    }
+  },
+  "ridgereg_p27_n75000": {
+    "model": "ridgeregression",
+    "nfeatures": 27,
+    "nobs": 75000,
+    "kwargs": {
+      "degree": 2,
+      "fit_intercept": true
+    }
+  }
+}
