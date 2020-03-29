@@ -10,7 +10,7 @@ from bld.project_paths import project_paths_join as ppj
 
 if __name__ == "__main__":
 
-    data_path = ppj("OUT_DATA", "data_with_predictions.pkl")
+    data_path = ppj("OUT_FINAL", "data_with_predictions.pkl")
     sciebo_path = "/home/tm/sciebo/uni-master/master-thesis/structUncertainty/"
 
     # time stamp

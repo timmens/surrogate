@@ -13,9 +13,9 @@ if __name__ == "__main__":
     to_drop = ["qoi_tuition_subsidy_1000", "qoi_tuition_subsidy_1500"]
     df_test = df_test.drop(to_drop, axis=1)
 
-    predictions = pickle.load(open(ppj("OUT_DATA", "predictions.pkl"), "rb"))
+    predictions = pickle.load(open(ppj("OUT_ANALYSIS", "predictions.pkl"), "rb"))
 
     df_out = pd.concat((df_test, predictions), axis=1, sort=False)
 
     # save data frame
-    pickle.dump(df_out, open(ppj("OUT_DATA", "data_with_predictions.pkl"), "wb"))
+    pickle.dump(df_out, open(ppj("OUT_FINAL", "data_with_predictions.pkl"), "wb"))

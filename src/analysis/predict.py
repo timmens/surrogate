@@ -31,7 +31,7 @@ if __name__ == "__main__":
     ordered_features = load_sorted_features()
 
     for key, model in zip(keys, classes):
-        model.load(ppj("OUT_ANALYSIS", key))
+        model.load(ppj("OUT_FITTED_MODELS", key))
 
         nfeatures = specs[key]["nfeatures"]
         if isinstance(nfeatures, int):
@@ -51,4 +51,4 @@ if __name__ == "__main__":
     prediction_array = np.concatenate(predictions, axis=1)
     out = pd.DataFrame(prediction_array, columns=keys)
 
-    pickle.dump(out, open(ppj("OUT_DATA", "predictions.pkl"), "wb"))
+    pickle.dump(out, open(ppj("OUT_ANALYSIS", "predictions.pkl"), "wb"))

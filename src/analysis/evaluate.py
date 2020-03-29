@@ -43,4 +43,4 @@ if __name__ == "__main__":
         .rename(columns={"index": "measure"})
         .melt(id_vars="measure", var_name="method", value_name="loss")
     )
-    tidy.to_csv(ppj("OUT_DATA", "losses.csv"), index=False)
+    tidy.to_csv(ppj("OUT_ANALYSIS", "losses.csv"), index=False)

@@ -77,12 +77,14 @@ def _bootstrap_single_model(
             XX, yy = X.iloc[index, :], y[index]
 
             m = model()
-            m.fit(XX, yy, **fit_kwargs)
-
-            ypred = m.predict(Xtest)
-            loss = metric(ytest, ypred)
-
-            result[i] = loss
+            # check for dimensionality problem; see issue #6
+            if m.name == "PolynomialRegression" and m.degree == 2 and XX.shape[0] < 406:
+                result[i] = np.nan
+            else:
+                m.fit(XX, yy, **fit_kwargs)
+                ypred = m.predict(Xtest)
+                loss = metric(ytest, ypred)
+                result[i] = loss
 
         return result
 
@@ -139,7 +141,23 @@ if __name__ == "__main__":
     }
 
     # data parameters
-    n_obs = [100, 200, 300, 400, 500, 1000, 2000, 5000, 10000, 20000, 50000]
+    n_obs = [
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900,
+        1000,
+        2000,
+        5000,
+        10000,
+        20000,
+        50000,
+    ]
 
     data = _bootstrap(
         n_samples=50,

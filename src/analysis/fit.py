@@ -48,4 +48,4 @@ if __name__ == "__main__":
     X, y = load_training_data(nobs=nobs, seed=1)
 
     model.fit(X[feature_list], y, **kwargs)
-    model.save(ppj("OUT_ANALYSIS", model_name), overwrite=True)
+    model.save(ppj("OUT_FITTED_MODELS", model_name), overwrite=True)

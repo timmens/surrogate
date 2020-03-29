@@ -15,7 +15,7 @@ if __name__ == "__main__":
     fig.set_size_inches(11.7, 8.27)  # A4 paper
 
     ax = sns.lineplot(x="n", y="mae", hue="model", data=df, ci=99, ax=ax)
-    ax.set_ylim(0.001, 0.03)
+    ax.set_ylim(0.005, 0.015)
     ax.set(
         xlabel="Number of obs. used for training", ylabel="Mean abs. error on test set"
     )
@@ -23,12 +23,12 @@ if __name__ == "__main__":
     ax.set(title="Comparison of model performance for varying training sample size")
     ax.text(
         95,
-        0.002,
+        0.0055,
         "Bootstrap draws: 50",
         bbox={"facecolor": "none", "edgecolor": "gray", "boxstyle": "round"},
     )
 
-    fig_path = ppj("OUT_FIGURE", "bootstrap_mae.pdf")
+    fig_path = ppj("OUT_FIGURES", "bootstrap_mae.pdf")
     fig.savefig(fig_path)
 
     # move figure to sciebo

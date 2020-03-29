@@ -24,6 +24,7 @@ def set_project_paths(ctx):
     pp["OUT_FINAL"] = f"{out}/out/final"
     pp["OUT_FIGURES"] = f"{out}/out/figures"
     pp["OUT_TABLES"] = f"{out}/out/tables"
+    pp["OUT_FITTED_MODELS"] = f"{out}/out/models"
 
     # Convert the directories into Waf nodes.
     for key, val in pp.items():
