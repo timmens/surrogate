@@ -1,0 +1,136 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[left=2.5cm, right=2.5cm, top=1cm, bottom=3cm]{geometry}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{bm}
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+
+\title{Surrogate Modeling}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+Capturing uncertainty in high-fidelity computational models can be costly on many domains or even infeasible.
+Here we follow the uncertainty quantification literature in building so called \textit{surrogate models}, which are designed to approximate the input-output relation of high-fidelity models.
+
+In the following we start with describing the data we are working with and then present the different kind of models we are using as surrogates.
+
+\section{Data}
+
+Say we want to analyze a model $\mathcal{M}$ that is parameterized with a parameter vector $\theta \in \Theta \subset \mathbb{R}^D$.
+Given a specific research question, we are interested in a \textit{quantity of interest} (qoi), that we can compute from the model.
+This relation we can write in a functional form, $qoi = \tilde{\mathcal{M}}(\theta)$ ---here we use a similar notation as for the model since the functional form can be derived from the model, but is not itself the model in general.
+For notational convenience we will write $y = \tilde{\mathcal{M}}(\theta)$ hereinafter.
+
+Further we assume that we obtained (maximum-likelihood) estimates $\hat{\theta}$ for $\theta$, with corresponding (approximate) standard errors.
+We then sample $\theta_n$ from the multivariate normal distribution defined by the mean vector $\hat{\theta}$ and standard deviation given by the estimated standard errors, for $n=1,\dots,N^*$ iterations ---this corresponds to the asymptotic distribution of the maximum-likelihood estimator.
+For each $\theta_n$ we compute the quantity of interest, $y_n$, using the high-fidelity model.
+
+Our general goal is to analyze how the uncertainty in the estimates, quantified by the standard errors, propagates through the model into the uncertainty of the quantity of interest.
+That is, we want to analyze the functional relationship $\theta \overset{f}{\longrightarrow} y$ using data $\mathcal{D} := \{(y_n, \theta_n) : n=1,\dots, N\}$.
+
+\subsection{Data Preprocessing and Model Validation}
+
+\paragraph{Data Preprocessing.}
+
+The input data we use is drawn from a multivariate normal distribution.
+For all models in question we therefore first standardize the input data, i.e. we subtract mean and divide by the empirical standard deviation.
+This has multiple advantages.
+For input dimensions with little variation we ensure that we do not run into problems regarding numerical singularity.
+Further, in all linear models this makes coefficient values comparable.
+
+\paragraph{Model Validation.}
+
+In the surrogate modeling framework we are only concerned with obtaining the best possible prediction.
+To ensure that we are not picking up noise from the data we split the original data set into a training and testing (validation) data set.
+For fitting of the surrogate model parameters we only use the training data set and for validation we only use the testing data set.
+We measure the goodness of fit of our models using the mean absolute prediction error on the validation set.
+
+
+\section{Surrogate Models}
+
+For notational convenience let us write $\bm{\Omega} = (\theta_1^\top, \dots, \theta_N^\top)^\top \in \mathbb{R}^{N \times D}$, where the rows of $\bm{\Omega}$ denote the different draws from the asymptotic distribution used for training and the columns the different dimensions / parameters of the model.
+Further, let us write $y = (y_1, \dots, y_N)^\top \in \mathbb{R}^N$.
+
+\subsection{Linear Regression}
+
+\paragraph{Model:}
+\begin{align}\label{eq:linear_model}
+  y_n &= \beta_0 + \sum_{d = 1}^D \beta_d \, \theta_n^{(d)} + \epsilon_n\\
+      &= \beta_0 + \beta^\top \theta_n + \epsilon_n
+\end{align}
+
+\paragraph{Estimation:}
+
+\begin{align}
+  \beta_0^*, \beta^* = \underset{b_0 \in \mathbb{R}, \bm{b} \in \mathbb{R}^D}{\text{argmin}} \left\{  \norm{y - b_0 - \bm{\Omega} \bm{b}}_2^2 \right \}
+\end{align}
+
+\paragraph{Prediction:}
+\begin{align}\label{eq:linear_prediction}
+y_{test} = \beta_0^* + \beta^* \theta_{test}
+\end{align}
+
+
+\subsection{Polynomial Regression (2nd degree)}
+
+\paragraph{Model:}
+\begin{align}\label{eq:polynomial_model} y_n = \beta_0 + \sum_{d=1}^D \beta_{1,d} \, \theta_n^{(d)} + \sum_{d=1}^D \beta_{2,d} \, (\theta_n^{(d)})^2 + \sum_{d\neq j} \beta_{3,dj} \, \theta_n^{(d)} \theta_n^{(j)} + \epsilon_n
+\end{align}
+
+\paragraph{Estimation:}
+Write $\phi(\theta)$ for the vector containing linear terms, squared terms and interaction terms.
+Then, $y_n = \beta_0 + \beta \, \phi(\theta_n) + \epsilon_n$ and
+\begin{align}
+  \beta_0^*, \beta^* = \underset{b_0 \in \mathbb{R}, \bm{b} \in \mathbb{R}^{(2D + {D \choose 2})}}{\text{argmin}} \left\{  \norm{y - b_0 - \phi(\bm{\Omega}) \bm{b}}_2^2 \right \}
+\end{align}
+
+\paragraph{Prediction:}
+\begin{align}\label{eq:polynomial_prediction}
+y_{test} = \beta_0^* + \beta^* \phi(\theta_{test})
+\end{align}
+
+
+\subsection{Ridge Regression (Tikhonov regularization)}
+
+\paragraph{Idea:} Regularize coefficients to avoid overfitting and increase prediction accuracy on test data.
+
+\paragraph{Model:} Same as equation \ref{eq:linear_model} or equation \ref{eq:polynomial_model}, depending on the degree of the polynomial used.
+
+\paragraph{Estimation:} Say we use a polynomial model of degree 1, then
+
+\begin{align}
+  \beta_0^{*}(\alpha), \beta^{*}(\alpha) = \underset{b_0 \in \mathbb{R}, \bm{b} \in \mathbb{R}^D}{\text{argmin}} \left\{  \norm{y - b_0 - \Omega \bm{b}}_2^2 + \alpha \norm{\bm{b}}_2^2 \right\} \,,
+\end{align}
+and
+\begin{align}
+  \beta_0^*, \beta^* = \beta_0^*(\alpha^*), \beta^*(\alpha^*) \,,
+\end{align}
+where $\alpha^*$ is chosen via cross validation on the training set.
+
+\paragraph{Prediction:} Same as equation \ref{eq:linear_prediction} or equation \ref{eq:polynomial_prediction}, depending on the degree of the polynomial used, but using the regularized coefficients.
+
+
+\subsection{Neural Networks}
+Work in progress.
+
+\subsection{Boosted Trees}
+Work in progress.
+
+\subsection{Gaussian Processes}
+Work in progress.
+
+\end{document}
