@@ -39,6 +39,21 @@ def build(ctx):
         name="boostrap_plot",
     )
 
+    ctx(
+        features="run_py_script",
+        source="ridge_variable_selection.py",
+        deps=[
+            ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
+            ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
+            ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
+        ],
+        target=[
+            ctx.path_to(ctx, "OUT_FIGURES", "ridge_variable_selection.pdf")
+        ],
+        name="ridge_variable_selection",
+    )
+
     from src.final.project_dependency_graph import make_project_dependency_graph
 
     ctx.add_post_fun(make_project_dependency_graph)

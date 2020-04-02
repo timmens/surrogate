@@ -24,7 +24,7 @@ if __name__ == "__main__":
     ax.text(
         95,
         0.0055,
-        "Bootstrap draws: 50",
+        "Bootstrap draws: 20",
         bbox={"facecolor": "none", "edgecolor": "gray", "boxstyle": "round"},
     )
 
