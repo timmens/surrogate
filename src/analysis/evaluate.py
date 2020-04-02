@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     X, y = load_testing_data()
 
-    predictions = pickle.load(open(ppj("OUT_DATA", "predictions.pkl"), "rb"))
+    predictions = pickle.load(open(ppj("OUT_ANALYSIS", "predictions.pkl"), "rb"))
 
     losses = {}
     for key in keys:

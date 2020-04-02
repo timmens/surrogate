@@ -173,7 +173,7 @@ def _fit(X, y, degree, fit_intercept=True, alphas=None):
     scaler = scaler.fit(X_)
     XX_ = scaler.transform(X_)
 
-    alphas = np.logspace(-5, 1, 100) if alphas is None else alphas
+    alphas = np.insert(np.logspace(-5, 1, 100), 0, 0) if alphas is None else alphas
     rr = RidgeCV(alphas=alphas, fit_intercept=fit_intercept, cv=5)
     rr = rr.fit(X=XX_, y=y)
 

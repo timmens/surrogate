@@ -154,13 +154,12 @@ if __name__ == "__main__":
         1000,
         2000,
         5000,
+        7000,
         10000,
-        20000,
-        50000,
     ]
 
     data = _bootstrap(
-        n_samples=50,
+        n_samples=20,
         n_obs_list=n_obs,
         models_params=models,
         metric=mean_absolute_error,
