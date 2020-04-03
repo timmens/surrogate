@@ -26,21 +26,20 @@
 Capturing uncertainty in high-fidelity computational models can be costly on many domains or even infeasible.
 Here we follow the uncertainty quantification literature in building so called \textit{surrogate models}, which are designed to approximate the input-output relation of high-fidelity models.
 
-In the following we start with describing the data we are working with and then present the different kind of models we are using as surrogates.
+In the following we start by describing the data we are working with and then present the different kind of models we are using as surrogates.
 
 \section{Data}
 
 Say we want to analyze a model $\mathcal{M}$ that is parameterized with a parameter vector $\theta \in \Theta \subset \mathbb{R}^D$.
 Given a specific research question, we are interested in a \textit{quantity of interest} (qoi), that we can compute from the model.
-This relation we can write in a functional form, $qoi = \tilde{\mathcal{M}}(\theta)$ ---here we use a similar notation as for the model since the functional form can be derived from the model, but is not itself the model in general.
-For notational convenience we will write $y = \tilde{\mathcal{M}}(\theta)$ hereinafter.
+We can write this relationship in a functional form, $qoi = \tilde{\mathcal{M}}(\theta)$ --here we use a similar notation as for the model since the functional form, i.e. the mathematical relationship between the quantity of interest and the parameters can be derived from the model, but it does not characterize the model in general. For notational convenience we will write $y = \tilde{\mathcal{M}}(\theta)$ hereinafter.
 
 Further we assume that we obtained (maximum-likelihood) estimates $\hat{\theta}$ for $\theta$, with corresponding (approximate) standard errors.
 We then sample $\theta_n$ from the multivariate normal distribution defined by the mean vector $\hat{\theta}$ and standard deviation given by the estimated standard errors, for $n=1,\dots,N^*$ iterations ---this corresponds to the asymptotic distribution of the maximum-likelihood estimator.
 For each $\theta_n$ we compute the quantity of interest, $y_n$, using the high-fidelity model.
 
 Our general goal is to analyze how the uncertainty in the estimates, quantified by the standard errors, propagates through the model into the uncertainty of the quantity of interest.
-That is, we want to analyze the functional relationship $\theta \overset{f}{\longrightarrow} y$ using data $\mathcal{D} := \{(y_n, \theta_n) : n=1,\dots, N\}$.
+That is, we want to analyze the functional relationship $\theta \overset{f}{\longrightarrow} y$ using data $\mathcal{D} := \{(y_n, \theta_n) : n=1,\dots, N\}$.%N^* and N different? Is the notation correct here?
 
 \subsection{Data Preprocessing and Model Validation}
 
@@ -58,12 +57,13 @@ In the surrogate modeling framework we are only concerned with obtaining the bes
 To ensure that we are not picking up noise from the data we split the original data set into a training and testing (validation) data set.
 For fitting of the surrogate model parameters we only use the training data set and for validation we only use the testing data set.
 We measure the goodness of fit of our models using the mean absolute prediction error on the validation set.
+%%maybe we should be more specific here: write down def. of test and training dat a la hastie and tibshirani, define prediction error (many people in econ not familiar! ) and introduce notation for the size of the training set/rel. share of the training set etc.
 
 
 \section{Surrogate Models}
 
-For notational convenience let us write $\bm{\Omega} = (\theta_1^\top, \dots, \theta_N^\top)^\top \in \mathbb{R}^{N \times D}$, where the rows of $\bm{\Omega}$ denote the different draws from the asymptotic distribution used for training and the columns the different dimensions / parameters of the model.
-Further, let us write $y = (y_1, \dots, y_N)^\top \in \mathbb{R}^N$.
+For notational convenience we write $\bm{\Omega} = (\theta_1^\top, \dots, \theta_N^\top)^\top \in \mathbb{R}^{N \times D}$, where the rows of $\bm{\Omega}$ denote the different draws from the asymptotic distribution used for training and the columns the different dimensions/ parameters of the model.
+Further, we write $\mathbf{y} = (y_1, \dots, y_N)^\top \in \mathbb{R}^N$.%I just like the more active wording, we can harmonize with Philipps writing style later. I also like bolding vectors, 
 
 \subsection{Linear Regression}
 
@@ -79,11 +79,15 @@ Further, let us write $y = (y_1, \dots, y_N)^\top \in \mathbb{R}^N$.
   \beta_0^*, \beta^* = \underset{b_0 \in \mathbb{R}, \bm{b} \in \mathbb{R}^D}{\text{argmin}} \left\{  \norm{y - b_0 - \bm{\Omega} \bm{b}}_2^2 \right \}
 \end{align}
 
+%Stupid question: did we standardize the qoi as well or only the thetas?
 \paragraph{Prediction:}
 \begin{align}\label{eq:linear_prediction}
 y_{test} = \beta_0^* + \beta^* \theta_{test}
 \end{align}
 
+\subsubsection{Results Linear Regression}
+
+Here we report the results of for different training data sizes etc. %here we should report the results for each surrogate model, varying with the size of the training data set etc. Put as many graphs in here as possible, we'll edit later
 
 \subsection{Polynomial Regression (2nd degree)}
 
