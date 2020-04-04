@@ -7,9 +7,9 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import median_absolute_error
 
 from bld.project_paths import project_paths_join as ppj
-from src.analysis.auxiliary import compute_loss_given_metrics
-from src.auxiliary.auxiliary import load_surrogates_specs
-from src.data_management.utilities import load_testing_data
+from src.utilities import compute_loss_given_metrics
+from src.utilities import load_surrogates_specs
+from src.utilities import load_testing_data
 
 if __name__ == "__main__":
     metrics = {

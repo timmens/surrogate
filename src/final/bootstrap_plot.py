@@ -1,5 +1,3 @@
-import shutil
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -30,7 +28,3 @@ if __name__ == "__main__":
 
     fig_path = ppj("OUT_FIGURES", "bootstrap_mae.pdf")
     fig.savefig(fig_path)
-
-    # move figure to sciebo
-    sciebo_path = "/home/tm/sciebo/uni-master/master-thesis/structUncertainty/"
-    shutil.copy(fig_path, sciebo_path + "bootstrap_mae.pdf")

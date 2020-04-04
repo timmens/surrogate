@@ -1,5 +1,5 @@
 #! python
-from src.auxiliary.auxiliary import load_surrogates_specs
+from src.utilities.utilities import load_surrogates_specs
 
 
 def build(ctx):
@@ -71,4 +71,20 @@ def build(ctx):
             ctx.path_to(ctx, "OUT_ANALYSIS", "bootstrap_mae.csv")
         ],
         name="bootstrap",
+    )
+
+    # ridge variable selection
+    ctx(
+        features="run_py_script",
+        source="variable_selection.py",
+        deps=[
+            ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
+            ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
+            ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
+        ],
+        target=[
+            ctx.path_to(ctx, "OUT_ANALYSIS", "variable_selection.pkl")
+        ],
+        name="variable_selection",
     )

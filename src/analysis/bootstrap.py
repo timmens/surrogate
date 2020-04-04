@@ -6,22 +6,32 @@ from joblib import Parallel
 from sklearn.metrics import mean_absolute_error
 
 from bld.project_paths import project_paths_join as ppj
-from src.data_management.utilities import load_testing_data
-from src.data_management.utilities import load_training_data
-from src.model_code.polynomialregression import PolynomialRegression
-from src.model_code.ridgeregression import RidgeRegression
+from src.model_code import PolynomialRegression
+from src.model_code import RidgeRegression
+from src.utilities import load_testing_data
+from src.utilities import load_training_data
 
 
 def _bootstrap(n_samples, n_obs_list, models_params, metric, n_jobs, seed):
-    """
+    """Wrapper for ``_bootstrap_single_model`` applied to multiple models.
 
     Args:
-        n_samples:
-        n_obs_list:
-        models_params:
-        metric:
-        n_jobs:
-        seed:
+        n_samples (int): Number of bootstrap draws for each number of observations.
+        n_obs_list (list): List containing the number of observations.
+            Example. nobs = [100, 500, 1000]
+        models_params (dict): Dictionary of dictionaries representing the different
+            models. Each inner dictionary has to contain the entry ``model``, which must
+            be a model from ``src.model_code`` and ``fit_kwargs``, which must denote the
+            kwargs used for fitting ``model``. Example.
+            models_params = {
+                "polreg": {
+                    "model": polynomialregression,
+                    "fit_kwargs": {"fit_intercept": True, "degree": 2}
+                }
+            }
+        metric (function): A metric from ``sklearn.metrics``.
+        n_jobs (int): Number of jobs for parallelization.
+        seed (int): Random number seed.
 
     Returns:
 
@@ -52,18 +62,17 @@ def _bootstrap_single_model(
     ``nsamples`` bootstrap samples.
 
     Args:
-        nobs (list): List containing the number of observations.
+        n_samples (int): Number of bootstrap draws for each number of observations.
+        n_obs_list (list): List containing the number of observations.
             Example. nobs = [100, 500, 1000]
-        nsamples (int): Number of bootstrap draws for each number
-            of observations.
         model (Model object): A model from ``src.model_code``.
         fit_kwargs (dict): Parameters used in ``fit`` method of ``model``.
         metric (function): A metric from ``sklearn.metrics``.
+        n_jobs (int): Number of jobs for parallelization.
         seed (int): Random number seed.
 
     Returns:
-        df_tidy (pd.DataFrame): Tidy data frame with columns
-            "n" and "mae".
+        df_tidy (pd.DataFrame): Tidy data frame with columns "n" and "mae".
 
     """
     Xtest, ytest = load_testing_data()
@@ -102,12 +111,12 @@ def _bootstrap_single_model(
 def _compute_subset_index(max_length, size, seed):
     """Sample elements from index with replacement.
 
-    Sample elements from object which can be cast to a np.ndarray
-    with replacement and return the resulting index as a pd.Index.
+    Sample ``size`` many elements from {1,...,``max_length``} with replacement and
+    return the resulting index as a pd.Index.
 
     Args:
-        index (pd.Index, np.ndarray, list): Index from which to sample.
-        n (int): Number of indices to sample.
+        max_length (int): Length of index.
+        size (int): Size of subindex.
         seed (int): Random number seed.
 
     Returns:

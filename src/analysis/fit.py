@@ -4,11 +4,10 @@ import sys
 import numpy as np
 
 from bld.project_paths import project_paths_join as ppj
-from src.auxiliary.auxiliary import get_surrogate_instances
-from src.auxiliary.auxiliary import load_sorted_features
-from src.auxiliary.auxiliary import load_surrogates_specs
-from src.data_management.utilities import load_training_data
-
+from src.utilities import get_surrogate_instances
+from src.utilities import load_sorted_features
+from src.utilities import load_surrogates_specs
+from src.utilities import load_training_data
 
 if __name__ == "__main__":
     model_name = sys.argv[1]

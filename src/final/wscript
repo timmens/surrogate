@@ -18,16 +18,6 @@ def build(ctx):
 
     ctx(
         features="run_py_script",
-        source="move_to_cloud.py",
-        deps=[
-            ctx.path_to(ctx, "IN_FINAL", "assemble_predictions.py"),
-            ctx.path_to(ctx, "OUT_FINAL", "data_with_predictions.pkl"),
-        ],
-        name="assemble_predictions",
-    )
-
-    ctx(
-        features="run_py_script",
         source="bootstrap_plot.py",
         deps=[
             ctx.path_to(ctx, "OUT_ANALYSIS", "bootstrap_mae.csv"),
@@ -41,17 +31,26 @@ def build(ctx):
 
     ctx(
         features="run_py_script",
-        source="ridge_variable_selection.py",
+        source="ridge_variable_selection_plot.py",
         deps=[
-            ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
-            ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
-            ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
-            ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
+            ctx.path_to(ctx, "OUT_ANALYSIS", "variable_selection.pkl"),
         ],
         target=[
             ctx.path_to(ctx, "OUT_FIGURES", "ridge_variable_selection.pdf")
         ],
-        name="ridge_variable_selection",
+        name="ridge_variable_selection_plot",
+    )
+
+    ctx(
+        features="run_py_script",
+        source="move_to_cloud.py",
+        deps=[
+            ctx.path_to(ctx, "IN_FINAL", "assemble_predictions.py"),
+            ctx.path_to(ctx, "OUT_FINAL", "data_with_predictions.pkl"),
+            ctx.path_to(ctx, "OUT_FIGURES", "bootstrap_mae.pdf"),
+            ctx.path_to(ctx, "OUT_FIGURES", "ridge_variable_selection.pdf"),
+        ],
+        name="move_to_cloud",
     )
 
     from src.final.project_dependency_graph import make_project_dependency_graph

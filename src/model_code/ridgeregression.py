@@ -11,9 +11,9 @@ from sklearn.linear_model import RidgeCV
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.preprocessing import StandardScaler
 
-from src.data_management.utilities import get_feature_names
 from src.model_code.surrogate import assert_input_fit
 from src.model_code.surrogate import Surrogate
+from src.utilities.utilities import get_feature_names
 
 
 class RidgeRegression(Surrogate):

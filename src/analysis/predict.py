@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 
 from bld.project_paths import project_paths_join as ppj
-from src.auxiliary.auxiliary import get_surrogate_instances
-from src.auxiliary.auxiliary import load_sorted_features
-from src.auxiliary.auxiliary import load_surrogates_specs
-from src.data_management.utilities import load_testing_data
+from src.utilities import get_surrogate_instances
+from src.utilities import load_sorted_features
+from src.utilities import load_surrogates_specs
+from src.utilities import load_testing_data
 
 if __name__ == "__main__":
 
