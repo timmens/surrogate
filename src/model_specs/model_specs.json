@@ -1,5 +1,5 @@
 {
-  "nnet_l54_l54_l54_l54_l54_n50000": {
+  "nnet1_p27_n50000": {
     "model": "neuralnetwork",
     "nfeatures": 27,
     "nobs": 50000,
@@ -15,7 +15,7 @@
       "n_batch_size": 10
     }
   },
-  "nnet_l54_l81_l54_n50000": {
+  "nnet2_p27_n50000": {
     "model": "neuralnetwork",
     "nfeatures": 27,
     "nobs": 50000,
@@ -29,7 +29,7 @@
       "n_batch_size": 10
     }
   },
-  "nnet_l54_l54_l54_n50000": {
+  "nnet3_p27_n50000": {
     "model": "neuralnetwork",
     "nfeatures": 27,
     "nobs": 50000,
@@ -43,7 +43,7 @@
       "n_batch_size": 10
     }
   },
-  "nnet_l81_l81_l81_n50000": {
+  "nnet4_p27_n50000": {
     "model": "neuralnetwork",
     "nfeatures": 27,
     "nobs": 50000,
@@ -57,7 +57,7 @@
       "n_batch_size": 10
     }
   },
-  "nnet_l54_l81_l54_l27_n75000": {
+  "nnet5_p27_n75000": {
     "model": "neuralnetwork",
     "nfeatures": 27,
     "nobs": 75000,
@@ -72,7 +72,7 @@
       "n_batch_size": 10
     }
   },
-  "nnet_l54_l54_n20000": {
+  "nnet6_p27_n20000": {
     "model": "neuralnetwork",
     "nfeatures": 27,
     "nobs": 20000,
