@@ -12,6 +12,7 @@ from .utilities import load_sorted_features
 from .utilities import load_surrogates_specs
 from .utilities import load_testing_data
 from .utilities import load_training_data
+from .utilities import suppress_stdout
 
 __all__ = [
     "compute_loss_given_metrics",
@@ -28,4 +29,5 @@ __all__ = [
     "load_surrogates_specs",
     "load_testing_data",
     "load_training_data",
+    "suppress_stdout",
 ]

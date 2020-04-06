@@ -1,12 +1,11 @@
 """Ridge regression surrogate model."""
 import glob
 import os
+import pickle
 import warnings
 
 import numpy as np
 import pandas as pd
-from joblib import dump
-from joblib import load
 from sklearn.linear_model import RidgeCV
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.preprocessing import StandardScaler
@@ -257,7 +256,8 @@ def _save(coefficients, degree, scaler, file_path, format, overwrite):
     file_present = glob.glob(file_path + format)
     if overwrite or not file_present:
         out.to_csv(file_path + format)
-        dump(scaler, file_path + "_scaler.bin", compress=True)
+        with open(file_path + "_scaler.pkl", "wb") as handle:
+            pickle.dump(scaler, handle)
     else:
         warnings.warn("File already exists. No actions taken.", UserWarning)
 
@@ -294,7 +294,8 @@ def _load(file_path, format):
         degree = int(coefficients.loc["<--degree-->"])
         coefficients = coefficients.drop("<--degree-->")
 
-        scaler = load(file_path + "_scaler.bin")
+        with open(file_path + "_scaler.pkl", "rb") as handle:
+            scaler = pickle.load(handle)
     except ValueError:
         raise ValueError(
             "Columns have wrong names. One column has to be"

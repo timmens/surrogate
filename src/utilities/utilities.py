@@ -1,9 +1,12 @@
 """Helper functions."""
 import importlib
 import json
+import os
 import pathlib
 import pickle
+import sys
 import warnings
+from contextlib import contextmanager
 
 import numpy as np
 import pandas as pd
@@ -180,6 +183,7 @@ def get_model_class_name(model):
         "linearregression": "LinearRegression",
         "polynomialregression": "PolynomialRegression",
         "ridgeregression": "RidgeRegression",
+        "neuralnetwork": "NeuralNetwork",
     }
 
     return translation[model]
@@ -253,3 +257,14 @@ def load_sorted_features():
         ppj("OUT_DATA", "sorted_features.csv"), header=None, names=["name"]
     )
     return series.name
+
+
+@contextmanager
+def suppress_stdout():
+    with open(os.devnull, "w") as devnull:
+        old_stdout = sys.stdout
+        sys.stdout = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = old_stdout
