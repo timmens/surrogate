@@ -1,4 +1,90 @@
 {
+  "nnet_l54_l54_l54_l54_l54_n50000": {
+    "model": "neuralnetwork",
+    "nfeatures": 27,
+    "nobs": 50000,
+    "kwargs": {
+      "layers": [
+        54,
+        54,
+        54,
+        54,
+        54
+      ],
+      "n_epochs": 100,
+      "n_batch_size": 10
+    }
+  },
+  "nnet_l54_l81_l54_n50000": {
+    "model": "neuralnetwork",
+    "nfeatures": 27,
+    "nobs": 50000,
+    "kwargs": {
+      "layers": [
+        54,
+        81,
+        54
+      ],
+      "n_epochs": 100,
+      "n_batch_size": 10
+    }
+  },
+  "nnet_l54_l54_l54_n50000": {
+    "model": "neuralnetwork",
+    "nfeatures": 27,
+    "nobs": 50000,
+    "kwargs": {
+      "layers": [
+        54,
+        54,
+        54
+      ],
+      "n_epochs": 100,
+      "n_batch_size": 10
+    }
+  },
+  "nnet_l81_l81_l81_n50000": {
+    "model": "neuralnetwork",
+    "nfeatures": 27,
+    "nobs": 50000,
+    "kwargs": {
+      "layers": [
+        81,
+        81,
+        81
+      ],
+      "n_epochs": 100,
+      "n_batch_size": 10
+    }
+  },
+  "nnet_l54_l81_l54_l27_n75000": {
+    "model": "neuralnetwork",
+    "nfeatures": 27,
+    "nobs": 75000,
+    "kwargs": {
+      "layers": [
+        54,
+        81,
+        54,
+        27
+      ],
+      "n_epochs": 100,
+      "n_batch_size": 10
+    }
+  },
+  "nnet_l54_l54_n20000": {
+    "model": "neuralnetwork",
+    "nfeatures": 27,
+    "nobs": 20000,
+    "kwargs": {
+      "layers": [
+        54,
+        54
+      ],
+      "n_epochs": 100,
+      "n_batch_size": 10
+    }
+  },
   "linreg_p5_n10000": {
     "model": "polynomialregression",
     "nfeatures": 5,
