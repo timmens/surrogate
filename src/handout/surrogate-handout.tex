@@ -57,7 +57,7 @@ In the surrogate modeling framework we are only concerned with obtaining the bes
 To ensure that we are not picking up noise from the data we split the original data set into a training and testing (validation) data set.
 For fitting of the surrogate model parameters we only use the training data set and for validation we only use the testing data set.
 We measure the goodness of fit of our models using the mean absolute prediction error on the validation set.
-%%maybe we should be more specific here: write down def. of test and training dat a la hastie and tibshirani, define prediction error (many people in econ not familiar! ) and introduce notation for the size of the training set/rel. share of the training set etc.
+%%maybe we should be more specific here: write down def. of test and training dat a la hastie and tibshirani, define prediction error (many people in econ not familiar! ) and introduce notation for the size of the training set/rel. share of the training set etc. When we vary the 
 
 
 \section{Surrogate Models}
@@ -127,7 +127,6 @@ where $\alpha^*$ is chosen via cross validation on the training set.
 
 \paragraph{Prediction:} Same as equation \ref{eq:linear_prediction} or equation \ref{eq:polynomial_prediction}, depending on the degree of the polynomial used, but using the regularized coefficients.
 
-
 \subsection{Neural Networks}
 Work in progress.
 
@@ -137,4 +136,23 @@ Work in progress.
 \subsection{Gaussian Processes}
 Work in progress.
 
+
+\section{Results}
+
+Here we compare the performance of the different surrogate models along two different margins that might be important to the applied researcher: the number of observations in the training data $N_{T}$, i.e. the number of draws from the asymptotic distribution, as this can be computationally intensive and along the number of parameters that are included in the prediction. 
+
+%%%N_{T} is the notation for the number of simulation draws in the training data, we can do another notation
+
+\subsection{Varying $N_{T}$}
+
+
+%	\includegraphics{bootstrap_mae.pdf} and include a version of this plot %did you try to fit the neural net with fewer observations as well so that it would makes sense to add a plot with the nn? It would also be fine to add a few points of the neural net, because we don't want to fit it for too many values of N
+%then write a few sentences about the result, characterize the best method w.r.t. mae for different N_T
+
+
+\subsection{Variable selection}
+
+%	\includegraphics{ridge_variable_selection.pdf} 
+
+%%%Write something about the figure: describe the procedure, why do we want to do variable selection, why does it not seem feasible in this case: (1) strucutral mdoels not sparse by assumption, (2) parameters possibly correlated in groups/high nonlinearity within groups, parameters jointly important... 
 \end{document}
