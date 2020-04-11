@@ -3,7 +3,9 @@
 
 def build(ctx):
     ctx.recurse("library")
+    ctx.recurse("model_specs")
     ctx.recurse("data_management")
+    ctx.add_group()
     ctx.recurse("analysis")
     ctx.recurse("final")
     # Safety measure -- else the LaTeX scanner might fail because some

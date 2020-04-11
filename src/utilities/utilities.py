@@ -241,7 +241,7 @@ def load_surrogates_specs():
         out (dict): Dictionary containing parameters for ``fit`` method of surrogates.
 
     """
-    with open(ppj("IN_MODEL_SPECS", "model_specs.json")) as file:
+    with open(ppj("OUT_MODEL_SPECS", "model_specs.json")) as file:
         out = json.loads(file.read())
     return out
 

@@ -1,5 +1,7 @@
 literature/
 
+*.ipynb
+
 *-blx.bib
 *.asv
 *.aux

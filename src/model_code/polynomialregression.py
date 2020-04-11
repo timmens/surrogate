@@ -135,7 +135,7 @@ class PolynomialRegression(Surrogate):
         return self.__class__.__name__
 
 
-def _fit(X, y, degree, fit_intercept=False, n_jobs=1):
+def _fit(X, y, degree, fit_intercept=True, n_jobs=1):
     """Fit a polynomial regression model using least squares.
 
     Args:
