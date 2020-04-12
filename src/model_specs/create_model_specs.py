@@ -98,7 +98,7 @@ if __name__ == "__main__":
         )
 
     # varying number of observations
-    nobs_list = [100, 200, 500, 700, 1000, 2000, 5000, 7000, 10000]
+    nobs_list = [100, 200, 500, 700, 1000, 2000, 5000, 7000, 10000, 20000, 50000, 70000]
     varying_observations = {}
 
     # linreg
@@ -138,15 +138,13 @@ if __name__ == "__main__":
     )
 
     # nnets
-    nobs_list_nnet = nobs_list.copy()
-    nobs_list_nnet.extend([25000, 50000])
-
     layers = [
         [54, 54],
         [81, 81, 81],
+        [81, 98, 98, 81],
         [54, 54, 54, 54, 54],
     ]
-    nnet_prefix = ["small", "large", "deep"]
+    nnet_prefix = ["small", "large", "huge", "deep"]
 
     for layer, p in zip(layers, nnet_prefix):
         varying_observations = dict(
@@ -155,7 +153,7 @@ if __name__ == "__main__":
                 model_prefix=f"nnet-{p}",
                 model="neuralnetwork",
                 nfeatures=27,
-                nobs_list=nobs_list_nnet,
+                nobs_list=nobs_list,
                 kwargs={"layers": layer, "n_epochs": 100, "n_batch_size": 10},
             ),
         )

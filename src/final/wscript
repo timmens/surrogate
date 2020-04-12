@@ -43,12 +43,39 @@ def build(ctx):
 
     ctx(
         features="run_py_script",
+        source="create_loss_data_frame.py",
+        deps=[
+            ctx.path_to(ctx, "OUT_ANALYSIS", "losses.csv"),
+        ],
+        target=[
+            ctx.path_to(ctx, "OUT_FINAL", "losses_mae_tidy.csv")
+        ],
+        name="create_loss_data_frame",
+    )
+
+    ctx(
+        features="run_py_script",
+        source="mae_plot.py",
+        deps=[
+            ctx.path_to(ctx, "IN_FINAL", "create_loss_data_frame.py"),
+            ctx.path_to(ctx, "OUT_FINAL", "losses_mae_tidy.csv")
+        ],
+        target=[
+            ctx.path_to(ctx, "OUT_FIGURES", "mae_plot.pdf")
+        ],
+        name="mae_plot",
+    )
+
+    ctx(
+        features="run_py_script",
         source="move_to_cloud.py",
         deps=[
-            ctx.path_to(ctx, "IN_FINAL", "assemble_predictions.py"),
             ctx.path_to(ctx, "OUT_FINAL", "data_with_predictions.pkl"),
             ctx.path_to(ctx, "OUT_FIGURES", "bootstrap_mae.pdf"),
             ctx.path_to(ctx, "OUT_FIGURES", "ridge_variable_selection.pdf"),
+            ctx.path_to(ctx, "OUT_ANALYSIS", "losses.csv"),
+            ctx.path_to(ctx, "OUT_FINAL", "losses_mae_tidy.csv"),
+            ctx.path_to(ctx, "OUT_FIGURES", "mae_plot.pdf"),
         ],
         name="move_to_cloud",
     )

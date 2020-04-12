@@ -64,3 +64,11 @@ if __name__ == "__main__":
     # ridge variable selection ########################################################
     variable_selection_path = ppj("OUT_FIGURES", "ridge_variable_selection.pdf")
     standard_copy(variable_selection_path, "ridge_variable_selection.pdf")
+
+    # tidy mae losses
+    losses_mae_path = ppj("OUT_FINAL", "losses_mae_tidy.csv")
+    standard_copy(losses_mae_path, "losses_mae_tidy.csv")
+
+    # tidy mae losses plot
+    mae_plot_path = ppj("OUT_FIGURES", "mae_plot.pdf")
+    standard_copy(mae_plot_path, "mae_plot.pdf")

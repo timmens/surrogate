@@ -4,8 +4,10 @@ import json
 import os
 import pathlib
 import pickle
+import re
 import sys
 import warnings
+from collections import namedtuple
 from contextlib import contextmanager
 
 import numpy as np
@@ -257,6 +259,70 @@ def load_sorted_features():
         ppj("OUT_DATA", "sorted_features.csv"), header=None, names=["name"]
     )
     return series.name
+
+
+def load_model_information():
+    """Load model information as namedtuple.
+
+    Returns:
+        models (list): List of namedtuples which represent the implemented
+          models. An item from `models` has attribured `colname` for an individual
+          string key, `name` for the name of the model, `label` for a label which
+          can be printed on a plot, `n` for the number of observations used for
+          fitting the model and `p` for the number of features used for fitting
+          of the model. Example.
+          models[0] = Model(colname='nnet1_p27_n50000', name='nnet1', label=
+          'Neural Network', n=50000, p=27)
+    """
+    model_specs = load_surrogates_specs()
+
+    # extract unique model names
+    model_keys = list(model_specs.keys())
+    model_names = [model.split("_")[0] for model in model_keys]
+
+    # extract number of observation grid and number of features grid
+    data_info = [model.split("_")[1:] for model in model_keys]
+    nobs = _select_n(data_info)
+
+    nfeatures = _select_p(data_info)
+
+    # store information about each specification in a namedtuple
+    Model = namedtuple("Model", "colname name n p")
+    models = [
+        Model(colname=key, name=name, n=n, p=p)
+        for key, name, n, p in zip(model_keys, model_names, nobs, nfeatures)
+    ]
+    return models
+
+
+def _select_n(data_info):
+    """Select number of observations from list of list of model data information.
+
+    Args:
+        data_info (list): List of list of model information.
+
+    Returns:
+        nobs (list): List containing number of observations for each item in data_info.
+
+    """
+    obs_data = [e for info in data_info for e in info if str.startswith(e, "n")]
+    nobs = [int(s) for e in obs_data for s in re.findall(r"\d+", e)]
+    return nobs
+
+
+def _select_p(data_info):
+    """Select number of features from list of list of model data information.
+
+    Args:
+        data_info (list): List of list of model information.
+
+    Returns:
+        nfeatures (list): List containing number of features for each item in data_info.
+
+    """
+    feature_data = [e for info in data_info for e in info if str.startswith(e, "p")]
+    nfeatures = [int(s) for e in feature_data for s in re.findall(r"\d+", e)]
+    return nfeatures
 
 
 @contextmanager
