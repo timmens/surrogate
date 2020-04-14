@@ -1,8 +1,9 @@
 #! python
 
+from src.utilities.utilities import load_implemented_model_names
+
 
 def build(ctx):
-
     ctx(
         features="run_py_script",
         source="assemble_predictions.py",
@@ -66,6 +67,19 @@ def build(ctx):
         name="mae_plot",
     )
 
+    model_names = load_implemented_model_names()
+    ctx(
+        features="run_py_script",
+        source="create_loss_latex_tables.py",
+        deps=[
+            ctx.path_to(ctx, "OUT_FINAL", "losses_mae_tidy.csv")
+        ],
+        target=[
+            ctx.path_to(ctx, "OUT_TABLES", f"mae_{model}.tex") for model in model_names
+        ],
+        name="create_loss_latex_tables",
+    )
+
     ctx(
         features="run_py_script",
         source="move_to_cloud.py",
@@ -76,6 +90,8 @@ def build(ctx):
             ctx.path_to(ctx, "OUT_ANALYSIS", "losses.csv"),
             ctx.path_to(ctx, "OUT_FINAL", "losses_mae_tidy.csv"),
             ctx.path_to(ctx, "OUT_FIGURES", "mae_plot.pdf"),
+        ] + [
+            ctx.path_to(ctx, "OUT_TABLES", f"mae_{model}.tex") for model in model_names
         ],
         name="move_to_cloud",
     )

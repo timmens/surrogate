@@ -261,6 +261,12 @@ def load_sorted_features():
     return series.name
 
 
+def load_implemented_model_names():
+    models = load_model_information()
+    names = {model.name for model in models}
+    return list(names)
+
+
 def load_model_information():
     """Load model information as namedtuple.
 

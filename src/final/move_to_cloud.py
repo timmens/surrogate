@@ -9,6 +9,7 @@ import os
 import shutil
 
 from bld.project_paths import project_paths_join as ppj
+from src.utilities.utilities import load_implemented_model_names
 
 sciebo_path = "/home/tm/sciebo/uni-master/master-thesis/structUncertainty/"
 
@@ -72,3 +73,9 @@ if __name__ == "__main__":
     # tidy mae losses plot
     mae_plot_path = ppj("OUT_FIGURES", "mae_plot.pdf")
     standard_copy(mae_plot_path, "mae_plot.pdf")
+
+    # latex tables
+    model_names = load_implemented_model_names()
+    for model in model_names:
+        mae_latex_path = ppj("OUT_TABLES", f"mae_{model}.tex")
+        standard_copy(mae_latex_path, f"mae_{model}.tex")
