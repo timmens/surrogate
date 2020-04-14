@@ -8,11 +8,18 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{hyperref}
-\usepackage{amsmath}
-\usepackage{amsthm}
 \usepackage{bm}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{import}
+\usepackage{booktabs}
 
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+% set path
+\newcommand{\sciebopath}{/home/tm/sciebo/uni-master/master-thesis/structUncertainty/}
+\graphicspath{\sciebopath}
 
 
 \title{Surrogate Modeling}
@@ -24,135 +31,223 @@
 \section{Introduction}
 
 Capturing uncertainty in high-fidelity computational models can be costly on many domains or even infeasible.
-Here we follow the uncertainty quantification literature in building so called \textit{surrogate models}, which are designed to approximate the input-output relation of high-fidelity models.
+Here we follow the uncertainty quantification literature in building so called \textit{surrogate models}, which are designed to approximate the input-output relation of complex models.
 
-In the following we start by describing the data we are working with and then present the different kind of models we are using as surrogates.
+In the following we describe the nonstandard data we are working with and how we can use surrogate models to capture the uncertainties present in the model.
+We describe various different surrogate models in section \ref{sec:surrogate_models}.
 
-\section{Data}
+\subsection{Uncertainty Propagation}
 
-Say we want to analyze a model $\mathcal{M}$ that is parameterized with a parameter vector $\theta \in \Theta \subset \mathbb{R}^D$.
+\paragraph{Model Calibration}
+
+Say we want to analyze a model $\mathcal{M}$ that is parameterized with a parameter vector $\theta \in \Theta \subset \mathbb{R}^d$.
 Given a specific research question, we are interested in a \textit{quantity of interest} (qoi), that we can compute from the model.
 We can write this relationship in a functional form, $qoi = \tilde{\mathcal{M}}(\theta)$ --here we use a similar notation as for the model since the functional form, i.e. the mathematical relationship between the quantity of interest and the parameters can be derived from the model, but it does not characterize the model in general. For notational convenience we will write $y = \tilde{\mathcal{M}}(\theta)$ hereinafter.
 
-Further we assume that we obtained (maximum-likelihood) estimates $\hat{\theta}$ for $\theta$, with corresponding (approximate) standard errors.
-We then sample $\theta_n$ from the multivariate normal distribution defined by the mean vector $\hat{\theta}$ and standard deviation given by the estimated standard errors, for $n=1,\dots,N^*$ iterations ---this corresponds to the asymptotic distribution of the maximum-likelihood estimator.
-For each $\theta_n$ we compute the quantity of interest, $y_n$, using the high-fidelity model.
+Further, we assume that we obtained estimates $\hat{\theta}$ for $\theta$, for example by using the maximum-likelihood technique, with corresponding (approximate) covariance matrix $\hat{\Sigma} = var(\hat{\theta})$.
+We also note that these estimates are calibrated on an observational data set $\{(Y_i, X_i) : i \in \mathcal{I}\}$, where $Y_i$ and $X_i$ denote the observed outcome of interest and observed covariates of individual $i$, respectively.
+We emphasize that for all further analyses we only need the observed data through the estimates of the parameter vector $\hat{\theta} = \hat{\theta}(\{(Y_i, X_i) : i \in \mathcal{I}\})$ and its dispersion $\hat{\Sigma} = \hat{\Sigma}(\{(Y_i, X_i) : i \in \mathcal{I}\})$.
 
-Our general goal is to analyze how the uncertainty in the estimates, quantified by the standard errors, propagates through the model into the uncertainty of the quantity of interest.
-That is, we want to analyze the functional relationship $\theta \overset{f}{\longrightarrow} y$ using data $\mathcal{D} := \{(y_n, \theta_n) : n=1,\dots, N\}$.%N^* and N different? Is the notation correct here?
+\paragraph{Propagation of Uncertainty}
 
-\subsection{Data Preprocessing and Model Validation}
+Given what we have found above, our general goal is to propagate the uncertainty in the model parameters, represented by its approximate distribution $\mathcal{N}(\hat{\theta}, \hat{\Sigma})$, through the model.
+That is, if we let $\bm{\theta} \sim \mathcal{N}(\hat{\theta}, \hat{\Sigma})$, we are interested in the distribution of $\tilde{\mathcal{M}}(\bm{\theta})$.
+For (very) simple models this distribution can be computed in analytical form, however, for most models an analytical approach is infeasible.
 
-\paragraph{Data Preprocessing.}
+\paragraph{Experimental Design}
 
-The input data we use is drawn from a multivariate normal distribution.
-For all models in question we therefore first standardize the input data, i.e. we subtract mean and divide by the empirical standard deviation.
-This has multiple advantages.
-For input dimensions with little variation we ensure that we do not run into problems regarding numerical singularity.
-Further, in all linear models this makes coefficient values comparable.
+To approximate $\tilde{\mathcal{M}}(\bm{\theta})$ we use a standard Monte Carlo technique in which we sample $\theta_1,\dots,\theta_n$ from $\mathcal{N}(\hat{\theta}, \hat{\Sigma})$ for a reasonable large $n$.
+For each $i = 1,\dots, n$, we then compute the quantity of interest using the high-fidelity model, i.e. $y_i = \tilde{\mathcal{M}}(\theta_i)$.
+The resulting (simulated) data set will be denoted by $\mathcal{D} := \{(y_i, \theta_i) : i=1,\dots, n\}$.
 
-\paragraph{Model Validation.}
+If it is possible to create such a data set for a reasonable large $n$, our analysis is done.
+We could then approximate the distribution of $\tilde{\mathcal{M}}(\bm{\theta})$ by the empirical distribution of $\{y_i : i = 1,\dots,n\}$.
+However, for many complex models the evaluation of $\tilde{\mathcal{M}}$ at some point $\theta$ can be slow, even on modern computers.
+Further, since we aim at propagating the uncertainty of $\theta$ through the model, we must draw values for $\theta$ from all regions where the mass of $\bm{\theta}$ is non-negligible.
+With standard models used in Economics the dimension of the parameter vector can easily exceed 50, which means we have to sample from a 50 dimensional space. Therefore, for most models, computation of the quantity of interest using an exhaustive sample is infeasible. This is why we use surrogate models which are designed to be very fast to evaluate.
 
-In the surrogate modeling framework we are only concerned with obtaining the best possible prediction.
-To ensure that we are not picking up noise from the data we split the original data set into a training and testing (validation) data set.
-For fitting of the surrogate model parameters we only use the training data set and for validation we only use the testing data set.
-We measure the goodness of fit of our models using the mean absolute prediction error on the validation set.
-%%maybe we should be more specific here: write down def. of test and training dat a la hastie and tibshirani, define prediction error (many people in econ not familiar! ) and introduce notation for the size of the training set/rel. share of the training set etc. When we vary the 
+\subsection{Model Validation}% and Data Preprocessing}
+
+%\paragraph{Data Preprocessing.}
+%
+%The input data we use is drawn from a multivariate normal distribution.
+%For all models in question we therefore first standardize the input data by subtracting the mean and dividing by the empirical standard deviation.
+%This has multiple advantages.
+%For input dimensions with little variation we ensure that we do not run into problems regarding numerical singularity.
+%Further, in all linear models this makes coefficients comparable.
+
+Let $f:\mathbb{R}^{\dim{\theta}} \to \mathbb{R}^{\dim{y}}$ denote a generic surrogate model.
+$f$ has to accomplish two main tasks.
+One, it has to be fast to evaluate.
+And two, it has to approximate the model well in all regions of interest.
+That is, $f(\theta) \approx \tilde{\mathcal{M}}(\theta)$ for all $\theta$ in the regions of interests.
+While the first task is problem dependent and hard to formalize, assesing the prediction error is well-defined and common practice among many disciplines.
+
+Since our goal is to evaluate $f$ on new data points, we have to make sure to evaluate the prediction error of $f$ on new data points as well.
+Common approaches to evaluate model performance are cross-validation or hold-out techniques.
+We proceed using the hold-out technique, that is, splitting the data set $\mathcal{D}$ into two subsamples $\mathcal{D}^{T}$ and $\mathcal{D}^{V}$, used for training ($T$) and validation ($V$), respectively.
+We then \emph{train} our model on the data points in $\mathcal{D}^{T}$ and \emph{validate} model performance by estimating the out-of-sample mean absolute prediction error on data points in $\mathcal{D}^V$ using
+\begin{align}
+  \text{MAE}(f, \mathcal{D}^V) := \frac{1}{|\mathcal{D}^V|} \sum_{(y_i, \theta_i) \in \mathcal{D}_S^V} |y_i - f(\theta_i)| \,.
+\end{align}
+
+In the following section we will present different kind of surrogate models and how they compare with respect to the estimated mean absolute error.
+For complex models it can already be computationally very costly to generate the data set $\mathcal{D}$ for $n > 1000$.
+This is why we repeat our analysis for varying training sizes, which stretch from $100$ to $75000$.
 
 
-\section{Surrogate Models}
+\section{Surrogate Models}\label{sec:surrogate_models}
 
-For notational convenience we write $\bm{\Omega} = (\theta_1^\top, \dots, \theta_N^\top)^\top \in \mathbb{R}^{N \times D}$, where the rows of $\bm{\Omega}$ denote the different draws from the asymptotic distribution used for training and the columns the different dimensions/ parameters of the model.
-Further, we write $\mathbf{y} = (y_1, \dots, y_N)^\top \in \mathbb{R}^N$.%I just like the more active wording, we can harmonize with Philipps writing style later. I also like bolding vectors, 
+Here we present various surrogate models which were used to approximate the model.
+We will write $n^\tau$ for a fixed training sample size.
+
+For notational convenience we further write $\bm{\Omega} = (\theta_1^\top, \dots, \theta_{n^\tau}^\top)^\top \in \mathbb{R}^{n^\tau \times d}$, where the rows of $\bm{\Omega}$ denote the different draws from the asymptotic distribution used for training and the columns the different dimensions/ parameters of the model.
+Further, we write $y = (y_1, \dots, y_{n^\tau})^\top \in \mathbb{R}^{n^\tau}$.
 
 \subsection{Linear Regression}
 
 \paragraph{Model:}
 \begin{align}\label{eq:linear_model}
-  y_n &= \beta_0 + \sum_{d = 1}^D \beta_d \, \theta_n^{(d)} + \epsilon_n\\
-      &= \beta_0 + \beta^\top \theta_n + \epsilon_n
+  y_i &= \beta_0 + \sum_{j = 1}^d \beta_j \, \theta_i^{(j)} + \epsilon_i\\
+      &= \beta_0 + \beta^\top \theta_i + \epsilon_i
 \end{align}
 
 \paragraph{Estimation:}
 
 \begin{align}
-  \beta_0^*, \beta^* = \underset{b_0 \in \mathbb{R}, \bm{b} \in \mathbb{R}^D}{\text{argmin}} \left\{  \norm{y - b_0 - \bm{\Omega} \bm{b}}_2^2 \right \}
+  \beta_0^*, \beta^* = \underset{b_0 \in \mathbb{R}, \bm{b} \in \mathbb{R}^d}{\text{argmin}} \left\{  \norm{y - b_0 - \bm{\Omega} \bm{b}}_2^2 \right \}
 \end{align}
 
 %Stupid question: did we standardize the qoi as well or only the thetas?
+%Answer: No.
 \paragraph{Prediction:}
 \begin{align}\label{eq:linear_prediction}
-y_{test} = \beta_0^* + \beta^* \theta_{test}
+  y_{test} = f_{linreg}(\theta_{test}) = \beta_0^* + \beta^* \theta_{test}
 \end{align}
 
-\subsubsection{Results Linear Regression}
 
-Here we report the results of for different training data sizes etc. %here we should report the results for each surrogate model, varying with the size of the training data set etc. Put as many graphs in here as possible, we'll edit later
+\subsubsection{Results}
+
+\begin{table}[!h]
+\footnotesize{
+\input{\sciebopath/mae_linreg}
+\caption{Linear regression}
+}
+\end{table}
 
 \subsection{Polynomial Regression (2nd degree)}
 
 \paragraph{Model:}
-\begin{align}\label{eq:polynomial_model} y_n = \beta_0 + \sum_{d=1}^D \beta_{1,d} \, \theta_n^{(d)} + \sum_{d=1}^D \beta_{2,d} \, (\theta_n^{(d)})^2 + \sum_{d\neq j} \beta_{3,dj} \, \theta_n^{(d)} \theta_n^{(j)} + \epsilon_n
+\begin{align}\label{eq:polynomial_model} y_i = \beta_0 + \sum_{j=1}^d \beta_{1,j} \, \theta_i^{(j)} + \sum_{j=1}^d \beta_{2,j} \, (\theta_i^{(j)})^2 + \sum_{j\neq k} \beta_{3,jk} \, \theta_i^{(j)} \theta_i^{(k)} + \epsilon_i
 \end{align}
 
 \paragraph{Estimation:}
 Write $\phi(\theta)$ for the vector containing linear terms, squared terms and interaction terms.
-Then, $y_n = \beta_0 + \beta \, \phi(\theta_n) + \epsilon_n$ and
+Then, $y_i = \beta_0 + \beta \, \phi(\theta_i) + \epsilon_i$ and
 \begin{align}
-  \beta_0^*, \beta^* = \underset{b_0 \in \mathbb{R}, \bm{b} \in \mathbb{R}^{(2D + {D \choose 2})}}{\text{argmin}} \left\{  \norm{y - b_0 - \phi(\bm{\Omega}) \bm{b}}_2^2 \right \}
+  \beta_0^*, \beta^* = \underset{b_0 \in \mathbb{R}, \bm{b} \in \mathbb{R}^{(2d + {d \choose 2})}}{\text{argmin}} \left\{  \norm{y - b_0 - \phi(\bm{\Omega}) \bm{b}}_2^2 \right \}
 \end{align}
 
 \paragraph{Prediction:}
 \begin{align}\label{eq:polynomial_prediction}
-y_{test} = \beta_0^* + \beta^* \phi(\theta_{test})
+  y_{test} = f_{polreg}(\theta_{test}) = \beta_0^* + \beta^* \phi(\theta_{test})
 \end{align}
 
+\subsubsection{Results}
+
+\begin{table}[!h]
+\footnotesize{
+\input{\sciebopath/mae_polreg}
+\caption{Linear regression with 2nd degree polynomial features}
+}
+\end{table}
 
 \subsection{Ridge Regression (Tikhonov regularization)}
 
-\paragraph{Idea:} Regularize coefficients to avoid overfitting and increase prediction accuracy on test data.
+The main idea behind using regularization methods is to avoid overfitting and therefore increase prediction accuracy on test data.
 
 \paragraph{Model:} Same as equation \ref{eq:linear_model} or equation \ref{eq:polynomial_model}, depending on the degree of the polynomial used.
 
 \paragraph{Estimation:} Say we use a polynomial model of degree 1, then
 
 \begin{align}
-  \beta_0^{*}(\alpha), \beta^{*}(\alpha) = \underset{b_0 \in \mathbb{R}, \bm{b} \in \mathbb{R}^D}{\text{argmin}} \left\{  \norm{y - b_0 - \Omega \bm{b}}_2^2 + \alpha \norm{\bm{b}}_2^2 \right\} \,,
+  \beta_0^{*}, \beta^{*}(\alpha) = \underset{b_0 \in \mathbb{R}, \bm{b} \in \mathbb{R}^d}{\text{argmin}} \left\{  \norm{y - b_0 - \Omega \bm{b}}_2^2 + \alpha \norm{\bm{b}}_2^2 \right\} \,,
 \end{align}
-and
-\begin{align}
-  \beta_0^*, \beta^* = \beta_0^*(\alpha^*), \beta^*(\alpha^*) \,,
-\end{align}
-where $\alpha^*$ is chosen via cross validation on the training set.
+and $\beta^* = \beta^*(\alpha^*)$, where $\alpha^*$ is chosen via cross validation on the training set.
 
 \paragraph{Prediction:} Same as equation \ref{eq:linear_prediction} or equation \ref{eq:polynomial_prediction}, depending on the degree of the polynomial used, but using the regularized coefficients.
+
+\subsubsection{Results}
+
+\begin{table}[!h]
+\footnotesize{
+\input{\sciebopath/mae_ridgereg}
+\caption{Ridge regression}
+}
+\end{table}
 
 \subsection{Neural Networks}
 Work in progress.
 
-\subsection{Boosted Trees}
-Work in progress.
+\subsubsection{Results}
 
-\subsection{Gaussian Processes}
-Work in progress.
+\begin{table}[!h]
+\footnotesize{
+\input{\sciebopath/mae_nnet-small}
+\caption{Small neural network}
+}
+\end{table}
+
+\begin{table}[!h]
+\footnotesize{
+\input{\sciebopath/mae_nnet-large}
+\caption{Large neural network}
+}
+\end{table}
+
+\begin{table}[!h]
+\footnotesize{
+\input{\sciebopath/mae_nnet-huge}
+\caption{Huge neural network}
+}
+\end{table}
+
+\begin{table}[!h]
+\footnotesize{
+\input{\sciebopath/mae_nnet-deep}
+\caption{Deep neural network}
+}
+\end{table}
+
+%\subsection{Boosted Trees}
+%Work in progress.
+%
+%\subsection{Gaussian Processes}
+%Work in progress.
 
 
 \section{Results}
 
-Here we compare the performance of the different surrogate models along two different margins that might be important to the applied researcher: the number of observations in the training data $N_{T}$, i.e. the number of draws from the asymptotic distribution, as this can be computationally intensive and along the number of parameters that are included in the prediction. 
+Here we compare the performance of the different surrogate models along two different margins that might be important to the applied researcher: the number of observations in the training data $n^\tau$, i.e. the number of draws from the asymptotic distribution, as this can be computationally intensive and along the number of parameters that are included in the prediction.
 
-%%%N_{T} is the notation for the number of simulation draws in the training data, we can do another notation
+\subsection{Varying $n^\tau$}
 
-\subsection{Varying $N_{T}$}
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.5]{mae_plot.pdf}
+\caption{\small{Comparison of model performance for varying training sample size. Number of training observations $n^\tau$ are depicted using a logarithmic scale on the $x$-axis. Mean absolute prediction error on the validation set $\mathcal{D}^V$ is depicted on the $y$-axis.}}
+\end{figure}
 
-
-%	\includegraphics{bootstrap_mae.pdf} and include a version of this plot %did you try to fit the neural net with fewer observations as well so that it would makes sense to add a plot with the nn? It would also be fine to add a few points of the neural net, because we don't want to fit it for too many values of N
-%then write a few sentences about the result, characterize the best method w.r.t. mae for different N_T
+For our data we can clearly see that the Ridge regression model using polynomial features and standard linear model using polynomial model outperform all other models.
+Importantly they already do so for very few training observations.
 
 
 \subsection{Variable selection}
 
-%	\includegraphics{ridge_variable_selection.pdf} 
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.45]{ridge_variable_selection.pdf}
+\caption{\small{Blue line shows mean absolute error when using a newly fit 2nd degree polynomial that only uses variables which had a coefficient value above the threshold. Annotated red lines display when and which variable was dropped. (Input variables were standardized beforehand to assure comparaibility.)}}
+\end{figure}
 
-%%%Write something about the figure: describe the procedure, why do we want to do variable selection, why does it not seem feasible in this case: (1) strucutral mdoels not sparse by assumption, (2) parameters possibly correlated in groups/high nonlinearity within groups, parameters jointly important... 
 \end{document}
