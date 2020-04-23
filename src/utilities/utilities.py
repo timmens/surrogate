@@ -1,14 +1,10 @@
 """Helper functions."""
-import importlib
 import json
-import os
 import pathlib
 import pickle
 import re
-import sys
 import warnings
 from collections import namedtuple
-from contextlib import contextmanager
 
 import numpy as np
 import pandas as pd
@@ -57,7 +53,7 @@ def load_testing_data(nobs=25000):
         X, y (np.array): Testing features and testing outcomes.
 
     """
-    df = pickle.load(open(ppj("OUT_DATA", "data_test.pkl"), "rb"))
+    df = pickle.load(open(ppj("OUT_DATA", "df_validation.pkl"), "rb"))
 
     df = df.iloc[:nobs, :]
 
@@ -78,7 +74,7 @@ def load_training_data(nobs=75000, seed=1):
     Returns:
         X, y (np.array): Training features and Training outcomes.
     """
-    df = pickle.load(open(ppj("OUT_DATA", "data_train.pkl"), "rb"))
+    df = pickle.load(open(ppj("OUT_DATA", "df_training.pkl"), "rb"))
 
     np.random.seed(seed)
     index = np.random.choice(np.arange(75000), size=nobs, replace=False)
@@ -172,70 +168,6 @@ def _extract_filename_from_path(file):
     return f
 
 
-def get_model_class_name(model):
-    """Translate model names to names of respective classes.
-
-    Args:
-        model (str): Model name.
-
-    Returns:
-        translated (list): List model class names.
-    """
-    translation = {
-        "linearregression": "LinearRegression",
-        "polynomialregression": "PolynomialRegression",
-        "ridgeregression": "RidgeRegression",
-        "neuralnetwork": "NeuralNetwork",
-    }
-
-    return translation[model]
-
-
-def get_model_class_names(models):
-    """
-
-    Args:
-        models:
-
-    Returns:
-
-    """
-    return [get_model_class_name(model) for model in models]
-
-
-def get_surrogate_instance(surrogate):
-    """
-
-    Args:
-        surrogate:
-
-    Returns:
-
-    """
-    module = "src.model_code." + surrogate
-    module = importlib.import_module(module)
-    surrogate_class_name = get_model_class_name(surrogate)
-    surrogate_class = getattr(module, surrogate_class_name)()
-    return surrogate_class
-
-
-def get_surrogate_instances(surrogates):
-    """
-
-    Args:
-        surrogates:
-
-    Returns:
-
-    """
-    if isinstance(surrogates, list) or isinstance(surrogates, tuple):
-        out = [get_surrogate_instance(surrogate) for surrogate in surrogates]
-    else:
-        out = get_surrogate_instance(surrogates)
-
-    return out
-
-
 def load_surrogates_specs():
     """Load model specifications for ``fit`` method of surrogates.
 
@@ -243,7 +175,9 @@ def load_surrogates_specs():
         out (dict): Dictionary containing parameters for ``fit`` method of surrogates.
 
     """
-    with open(ppj("OUT_MODEL_SPECS", "model_specs.json")) as file:
+    filepath = ppj("OUT_MODEL_SPECS", "model_specs.json")
+
+    with open(filepath) as file:
         out = json.loads(file.read())
     return out
 
@@ -329,14 +263,3 @@ def _select_p(data_info):
     feature_data = [e for info in data_info for e in info if str.startswith(e, "p")]
     nfeatures = [int(s) for e in feature_data for s in re.findall(r"\d+", e)]
     return nfeatures
-
-
-@contextmanager
-def suppress_stdout():
-    with open(os.devnull, "w") as devnull:
-        old_stdout = sys.stdout
-        sys.stdout = devnull
-        try:
-            yield
-        finally:
-            sys.stdout = old_stdout

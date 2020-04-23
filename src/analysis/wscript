@@ -1,11 +1,16 @@
 #! python
 
+import json
+
+from src.utilities import get_surrogate_instances
+
 
 def build(ctx):
-    from src.utilities import load_surrogates_specs
-    from src.utilities import get_surrogate_instances
 
-    specs = load_surrogates_specs()
+    filepath = "bld/out/specs/model_specs.json"
+    with open(filepath) as file:
+        specs = json.loads(file.read())
+
     models = list(specs.keys())
     model_names = [specs[model]["model"] for model in models]
     model_instances = get_surrogate_instances(model_names)
@@ -16,7 +21,9 @@ def build(ctx):
             features="run_py_script",
             source="fit.py",
             deps=[
-                ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
+                ctx.path_to(ctx, "OUT_MODEL_SPECS", "model_specs.json"),
+                ctx.path_to(ctx, "IN_DATA_MANAGEMENT", "train_test_split.py"),
+                ctx.path_to(ctx, "OUT_DATA", "df_training.pkl"),
                 ctx.path_to(ctx, "OUT_DATA", "sorted_features.csv"),
                 ctx.path_to(ctx, "IN_MODEL_CODE", name + ".py"),
             ],
@@ -33,13 +40,13 @@ def build(ctx):
         features="run_py_script",
         source="predict.py",
         deps=[
-            ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "df_validation.pkl"),
             ctx.path_to(ctx, "IN_ANALYSIS", "fit.py"),
         ] + [
             ctx.path_to(ctx, "OUT_FITTED_MODELS", model + instance.file_type) for model, instance in zip(models, model_instances)
         ],
         target=[
-            ctx.path_to(ctx, "OUT_ANALYSIS", "predictions.pkl"),
+            ctx.path_to(ctx, "OUT_ANALYSIS", "df_prediction.pkl"),
         ],
         name="predict",
     )
@@ -49,7 +56,7 @@ def build(ctx):
         features="run_py_script",
         source="evaluate.py",
         deps=[
-            ctx.path_to(ctx, "OUT_ANALYSIS", "predictions.pkl"),
+            ctx.path_to(ctx, "OUT_ANALYSIS", "df_prediction.pkl"),
             ctx.path_to(ctx, "IN_ANALYSIS", "predict.py"),
         ],
         target=[
@@ -63,8 +70,8 @@ def build(ctx):
         features="run_py_script",
         source="bootstrap.py",
         deps=[
-            ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
-            ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "df_training.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "df_validation.pkl"),
             ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
             ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
         ],
@@ -79,8 +86,8 @@ def build(ctx):
         features="run_py_script",
         source="variable_selection.py",
         deps=[
-            ctx.path_to(ctx, "OUT_DATA", "data_train.pkl"),
-            ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "df_training.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "df_validation.pkl"),
             ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
             ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
         ],

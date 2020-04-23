@@ -4,18 +4,6 @@ from src.utilities.utilities import load_implemented_model_names
 
 
 def build(ctx):
-    ctx(
-        features="run_py_script",
-        source="assemble_predictions.py",
-        deps=[
-            ctx.path_to(ctx, "OUT_DATA", "data_test.pkl"),
-            ctx.path_to(ctx, "OUT_ANALYSIS", "predictions.pkl"),
-        ],
-        target=[
-            ctx.path_to(ctx, "OUT_FINAL", "data_with_predictions.pkl"),
-        ],
-        name="assemble_predictions",
-    )
 
     ctx(
         features="run_py_script",
@@ -84,7 +72,9 @@ def build(ctx):
         features="run_py_script",
         source="move_to_cloud.py",
         deps=[
-            ctx.path_to(ctx, "OUT_FINAL", "data_with_predictions.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "df_validation.pkl"),
+            ctx.path_to(ctx, "OUT_DATA", "df_training.pkl"),
+            ctx.path_to(ctx, "OUT_ANALYSIS", "df_prediction.pkl"),
             ctx.path_to(ctx, "OUT_FIGURES", "bootstrap_mae.pdf"),
             ctx.path_to(ctx, "OUT_FIGURES", "ridge_variable_selection.pdf"),
             ctx.path_to(ctx, "OUT_ANALYSIS", "losses.csv"),

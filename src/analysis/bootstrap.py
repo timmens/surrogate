@@ -8,8 +8,8 @@ from sklearn.metrics import mean_absolute_error
 from bld.project_paths import project_paths_join as ppj
 from src.model_code import PolynomialRegression
 from src.model_code import RidgeRegression
-from src.utilities import load_testing_data
-from src.utilities import load_training_data
+from src.utilities.utilities import load_testing_data
+from src.utilities.utilities import load_training_data
 
 
 def _bootstrap(n_samples, n_obs_list, models_params, metric, n_jobs, seed):

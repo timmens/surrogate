@@ -82,8 +82,7 @@ def _create_specs(model, nfeatures, nobs, kwargs):
     return specs
 
 
-if __name__ == "__main__":
-
+def main():
     # varying number of features
     prefix = ["linreg", "polreg", "ridgereg"]
     models = ["polynomialregression", "polynomialregression", "ridgeregression"]
@@ -166,3 +165,7 @@ if __name__ == "__main__":
         json.dump(specs, handle)
     with open(ppj("IN_MODEL_SPECS", "model_specs.json"), "w") as handle:
         json.dump(specs, handle)
+
+
+if __name__ == "__main__":
+    main()

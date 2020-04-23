@@ -14,11 +14,14 @@ from src.utilities.utilities import load_implemented_model_names
 sciebo_path = "/home/tm/sciebo/uni-master/master-thesis/structUncertainty/"
 
 
-def standard_copy(src, name):
-    shutil.copy(src, sciebo_path + name)
+def standard_copy(src, name, type_):
+    fpath = sciebo_path + type_ + "/"
+    shutil.copy(src, fpath + name)
 
 
-def logged_copy(src, name, logfile_prefix):
+def logged_copy(src, name, logfile_prefix, type_):
+    fpath = sciebo_path + type_ + "/"
+
     logfile_name = logfile_prefix + "_logfile.txt"
 
     # time stamp
@@ -26,15 +29,15 @@ def logged_copy(src, name, logfile_prefix):
     now = now.replace(":", "-").replace(" ", "-")
 
     # check if logfile exists
-    logfile_exists = os.path.isfile(sciebo_path + logfile_name)
+    logfile_exists = os.path.isfile(fpath + logfile_name)
     # check if data file exists
-    datafile_exists = os.path.isfile(sciebo_path + name)
+    datafile_exists = os.path.isfile(fpath + name)
 
     # read and write time stamp
     if logfile_exists:
-        with open(sciebo_path + logfile_name, "r") as file:
+        with open(fpath + logfile_name, "r") as file:
             old_time_stamp = file.readline()
-    with open(sciebo_path + logfile_name, "w") as file:
+    with open(fpath + logfile_name, "w") as file:
         file.writelines(now)
 
     if logfile_exists and datafile_exists:
@@ -42,40 +45,55 @@ def logged_copy(src, name, logfile_prefix):
             sciebo_path + "ARCHIVE/" + name + "-" + old_time_stamp + ".pkl"
         )
         # move old file to ARCHIVE
-        shutil.move(sciebo_path + name, to_archive_file_name)
+        shutil.move(fpath + name, to_archive_file_name)
 
     # move new file to sciebo
-    shutil.copy(src, sciebo_path + name)
+    shutil.copy(src, fpath + name)
 
 
-if __name__ == "__main__":
+def main():
+    # data sets (predicted, testing, training)
+    data_path = ppj("OUT_ANALYSIS", "df_prediction.pkl")
+    logged_copy(
+        data_path, "df_prediction.pkl", logfile_prefix="data_pred", type_="data"
+    )
 
-    # full data set ###################################################################
-    data_path = ppj("OUT_FINAL", "data_with_predictions.pkl")
-    logged_copy(src=data_path, name="data_with_predictions.pkl", logfile_prefix="data")
+    standard_copy(
+        ppj("OUT_DATA", "df_validation.pkl"), "df_validation.pkl", type_="data"
+    )
 
-    # losses of models ################################################################
-    losses_path = ppj("OUT_ANALYSIS", "losses.csv")
-    standard_copy(losses_path, "losses.csv")
+    standard_copy(ppj("OUT_DATA", "df_training.pkl"), "df_training.pkl", type_="data")
 
-    # bootstrap mae plot ##############################################################
-    bootstrap_path = ppj("OUT_FIGURES", "bootstrap_mae.pdf")
-    standard_copy(bootstrap_path, "bootstrap_mae.pdf")
-
-    # ridge variable selection ########################################################
-    variable_selection_path = ppj("OUT_FIGURES", "ridge_variable_selection.pdf")
-    standard_copy(variable_selection_path, "ridge_variable_selection.pdf")
+    # losses of models
+    standard_copy(ppj("OUT_ANALYSIS", "losses.csv"), "losses.csv", type_="data")
 
     # tidy mae losses
-    losses_mae_path = ppj("OUT_FINAL", "losses_mae_tidy.csv")
-    standard_copy(losses_mae_path, "losses_mae_tidy.csv")
+    standard_copy(
+        ppj("OUT_FINAL", "losses_mae_tidy.csv"), "losses_mae_tidy.csv", type_="data"
+    )
+
+    # bootstrap mae plot
+    standard_copy(
+        ppj("OUT_FIGURES", "bootstrap_mae.pdf"), "bootstrap_mae.pdf", type_="figures"
+    )
+
+    # ridge variable selection
+    standard_copy(
+        ppj("OUT_FIGURES", "ridge_variable_selection.pdf"),
+        "ridge_variable_selection.pdf",
+        type_="figures",
+    )
 
     # tidy mae losses plot
-    mae_plot_path = ppj("OUT_FIGURES", "mae_plot.pdf")
-    standard_copy(mae_plot_path, "mae_plot.pdf")
+    standard_copy(ppj("OUT_FIGURES", "mae_plot.pdf"), "mae_plot.pdf", type_="figures")
 
     # latex tables
     model_names = load_implemented_model_names()
     for model in model_names:
-        mae_latex_path = ppj("OUT_TABLES", f"mae_{model}.tex")
-        standard_copy(mae_latex_path, f"mae_{model}.tex")
+        standard_copy(
+            ppj("OUT_TABLES", f"mae_{model}.tex"), f"mae_{model}.tex", type_="tex"
+        )
+
+
+if __name__ == "__main__":
+    main()

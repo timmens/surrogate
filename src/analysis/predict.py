@@ -6,9 +6,9 @@ import pandas as pd
 
 from bld.project_paths import project_paths_join as ppj
 from src.utilities import get_surrogate_instances
-from src.utilities import load_sorted_features
-from src.utilities import load_surrogates_specs
-from src.utilities import load_testing_data
+from src.utilities.utilities import load_sorted_features
+from src.utilities.utilities import load_surrogates_specs
+from src.utilities.utilities import load_testing_data
 
 if __name__ == "__main__":
 
@@ -49,6 +49,10 @@ if __name__ == "__main__":
         predictions.append(prediction.reshape((-1, 1)))
 
     prediction_array = np.concatenate(predictions, axis=1)
-    out = pd.DataFrame(prediction_array, columns=keys)
 
-    pickle.dump(out, open(ppj("OUT_ANALYSIS", "predictions.pkl"), "wb"))
+    df_predictions = pd.DataFrame(prediction_array, columns=keys)
+    df_predictions.index = pd.MultiIndex.from_product(
+        [["validation"], range(len(df_predictions))], names=["dataset", "iteration"]
+    )
+
+    pickle.dump(df_predictions, open(ppj("OUT_ANALYSIS", "df_prediction.pkl"), "wb"))

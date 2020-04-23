@@ -7,9 +7,9 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import median_absolute_error
 
 from bld.project_paths import project_paths_join as ppj
-from src.utilities import compute_loss_given_metrics
-from src.utilities import load_surrogates_specs
-from src.utilities import load_testing_data
+from src.utilities.utilities import compute_loss_given_metrics
+from src.utilities.utilities import load_surrogates_specs
+from src.utilities.utilities import load_testing_data
 
 if __name__ == "__main__":
     metrics = {
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     X, y = load_testing_data()
 
-    predictions = pickle.load(open(ppj("OUT_ANALYSIS", "predictions.pkl"), "rb"))
+    predictions = pickle.load(open(ppj("OUT_ANALYSIS", "df_prediction.pkl"), "rb"))
 
     losses = {}
     for key in keys:
