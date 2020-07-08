@@ -5,11 +5,9 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error
 
+import src.surrogates as surrogate
 from bld.project_paths import project_paths_join as ppj
-from src.model_code.polynomialregression import PolynomialRegression
-from src.model_code.ridgeregression import RidgeRegression
-from src.utilities.utilities import load_testing_data
-from src.utilities.utilities import load_training_data
+from src.utilities.utilities import load_data
 
 
 def is_interaction(coef_name):
@@ -20,22 +18,20 @@ def is_squared(coef_name):
     return coef_name.endswith("^2")
 
 
-if __name__ == "__main__":
+def main():
     # data used for ridge regression (low sample size to induce regularization)
-    Xridge, yridge = load_training_data(nobs=200)
-    # data used for polynomial model fitting on subset of variables
-    Xpol, ypol = load_training_data(nobs=5000)
-    # data used to estimate the mean absolute error on test set
-    Xtest, ytest = load_testing_data(nobs=5000)
+    Xridge, yridge = load_data(n_train=200)
 
-    rr = RidgeRegression()
-    pr = PolynomialRegression()
+    # data used for polynomial model fitting on subset of variables
+    Xpol, ypol = load_data(n_train=5000)
+
+    # data used to estimate the mean absolute error on test set
+    Xtest, ytest = load_data(n_test=5000, testing=True)
 
     # ridge regression, variable regularization
-    rr = rr.fit(Xridge, yridge, degree=1)
+    rr = surrogate.fit("ridge", Xridge, yridge, degree=1)
 
-    coef = rr.coefficients.values.reshape(-1)
-
+    coef = rr["model"].coefficients.values.reshape(-1)
     thresholds = np.linspace(0, 0.05, num=500)
 
     # find parameters which are zero given a threshold
@@ -45,10 +41,16 @@ if __name__ == "__main__":
         is_zero.append(zero)
 
     # extract parameter names
-    is_zero_named = [rr.coefficients.index[index].to_list() for index in is_zero]
+    is_zero_named = [
+        rr["model"].coefficients.index[index].to_list() for index in is_zero
+    ]
 
-    is_zero_squared = [[e for e in x if is_squared(e)] for x in is_zero_named]
-    is_zero_interaction = [[e for e in x if is_interaction(e)] for x in is_zero_named]
+    is_zero_squared = [  # noqa: F841
+        [e for e in x if is_squared(e)] for x in is_zero_named
+    ]
+    is_zero_interaction = [  # noqa: F841
+        [e for e in x if is_interaction(e)] for x in is_zero_named
+    ]
     is_zero_linear = [
         [e for e in x if not is_interaction(e) and not is_squared(e)]
         for x in is_zero_named
@@ -57,10 +59,10 @@ if __name__ == "__main__":
     # compute test mae using polynomial model and store in data frame
     mae = []
     for drop in is_zero_named:
-        XX = Xpol.drop(drop, axis=1)
+        XX = Xpol.drop(drop, axis=1)  # noqa: F841
         XXtest = Xtest.drop(drop, axis=1)
-        pr = pr.fit(XX, ypol, degree=2, fit_intercept=True)
-        ypred = pr.predict(XXtest)
+        pr = surrogate.fit("polynomial", XXtest, ytest, degree=2, fit_intercept=True)
+        ypred = pr["model"].predict("polynomial", XXtest)
         mae.append(mean_absolute_error(ytest, ypred))
 
     df = pd.DataFrame(zip(mae, thresholds), columns=["mae", "thresholds"])
@@ -84,3 +86,7 @@ if __name__ == "__main__":
     }
     with open(ppj("OUT_ANALYSIS", "variable_selection.pkl"), "wb") as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+if __name__ == "__main__":
+    main()

@@ -12,10 +12,10 @@ def set_project_paths(ctx):
 
     pp = OrderedDict()
     pp["PROJECT_ROOT"] = "."
-    pp["IN_DATA"] = "src/original_data"
+    pp["IN_DATA"] = "src/data"
     pp["IN_DATA_MANAGEMENT"] = "src/data_management"
-    pp["IN_MODEL_CODE"] = "src/model_code"
-    pp["IN_MODEL_SPECS"] = "src/model_specs"
+    pp["IN_MODEL_CODE"] = "src/surrogates"
+    pp["IN_MODEL_SPECS"] = "src/specs"
     pp["IN_ANALYSIS"] = "src/analysis"
     pp["IN_FINAL"] = "src/final"
     pp["LIBRARY"] = "src/library"

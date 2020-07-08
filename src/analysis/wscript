@@ -1,85 +1,62 @@
 #! python
 
-import json
-
-from src.utilities import get_surrogate_instances
-
 
 def build(ctx):
 
-    filepath = "bld/out/specs/model_specs.json"
-    with open(filepath) as file:
-        specs = json.loads(file.read())
+    # select simulation models for which we run the analysis
+    import json
+    with open("src/models_to_run.json") as handle:
+        models_to_run = json.loads(handle.read())["models"]
 
-    models = list(specs.keys())
-    model_names = [specs[model]["model"] for model in models]
-    model_instances = get_surrogate_instances(model_names)
-
-    # fit
-    for model, name, instance in zip(models, model_names, model_instances):
+    # fit models
+    for model in models_to_run:
         ctx(
             features="run_py_script",
             source="fit.py",
             deps=[
-                ctx.path_to(ctx, "OUT_MODEL_SPECS", "model_specs.json"),
-                ctx.path_to(ctx, "IN_DATA_MANAGEMENT", "train_test_split.py"),
-                ctx.path_to(ctx, "OUT_DATA", "df_training.pkl"),
+                ctx.path_to(ctx, "OUT_DATA", "training-kw_94_one-random.pkl"),
+                ctx.path_to(ctx, "OUT_DATA", "training-kw_97_basic-random.pkl"),
                 ctx.path_to(ctx, "OUT_DATA", "sorted_features.csv"),
-                ctx.path_to(ctx, "IN_MODEL_CODE", name + ".py"),
+                ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
+                ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
             ],
-            target=[
-                ctx.path_to(ctx, "OUT_FITTED_MODELS", model + instance.file_type),
-                ctx.path_to(ctx, "OUT_FITTED_MODELS", model + "_scaler.pkl"),
-            ],
-            append=model,
+            target=ctx.path_to(ctx, "OUT_FITTED_MODELS", f"{model}-fitted_models.pkl"),
             name="fit",
+            append=model,
         )
 
-    # predict
-    ctx(
-        features="run_py_script",
-        source="predict.py",
-        deps=[
-            ctx.path_to(ctx, "OUT_DATA", "df_validation.pkl"),
-            ctx.path_to(ctx, "IN_ANALYSIS", "fit.py"),
-        ] + [
-            ctx.path_to(ctx, "OUT_FITTED_MODELS", model + instance.file_type) for model, instance in zip(models, model_instances)
-        ],
-        target=[
-            ctx.path_to(ctx, "OUT_ANALYSIS", "df_prediction.pkl"),
-        ],
-        name="predict",
-    )
+        # predict test data and evaluate prediction error
+        ctx(
+            features="run_py_script",
+            source="predict_and_evaluate.py",
+            deps=[
+                ctx.path_to(ctx, "OUT_DATA", "testing-kw_94_one-random.pkl"),
+                ctx.path_to(ctx, "OUT_DATA", "testing-kw_97_basic-random.pkl"),
+                ctx.path_to(ctx, "OUT_FITTED_MODELS", "fitted_models.pkl"),
+            ],
+            target=[
+                ctx.path_to(ctx, "OUT_ANALYSIS", f"{model}-predictions.pkl"),
+                ctx.path_to(ctx, "OUT_ANALYSIS", f"{model}-losses.csv"),
+            ],
+            name="predict_and_evaluate",
+            append=model,
+        )
 
-    # evaluate
-    ctx(
-        features="run_py_script",
-        source="evaluate.py",
-        deps=[
-            ctx.path_to(ctx, "OUT_ANALYSIS", "df_prediction.pkl"),
-            ctx.path_to(ctx, "IN_ANALYSIS", "predict.py"),
-        ],
-        target=[
-            ctx.path_to(ctx, "OUT_ANALYSIS", "losses.csv"),
-        ],
-        name="evaluate",
-    )
-
-    # bootstrap
-    ctx(
-        features="run_py_script",
-        source="bootstrap.py",
-        deps=[
-            ctx.path_to(ctx, "OUT_DATA", "df_training.pkl"),
-            ctx.path_to(ctx, "OUT_DATA", "df_validation.pkl"),
-            ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
-            ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
-        ],
-        target=[
-            ctx.path_to(ctx, "OUT_ANALYSIS", "bootstrap_mae.csv")
-        ],
-        name="bootstrap",
-    )
+    # # bootstrap
+    # ctx(
+    #     features="run_py_script",
+    #     source=".bootstrap.py",
+    #     deps=[
+    #         ctx.path_to(ctx, "OUT_DATA", "df_training.pkl"),
+    #         ctx.path_to(ctx, "OUT_DATA", "df_validation.pkl"),
+    #         ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
+    #         ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
+    #     ],
+    #     target=[
+    #         ctx.path_to(ctx, "OUT_ANALYSIS", "bootstrap_mae.csv")
+    #     ],
+    #     name="bootstrap",
+    # )
 
     # ridge variable selection
     ctx(

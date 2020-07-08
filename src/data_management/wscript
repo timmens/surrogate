@@ -3,18 +3,25 @@
 
 def build(ctx):
 
-    ctx(
-        features="run_py_script",
-        source="train_test_split.py",
-        deps=[
-            ctx.path_to(ctx, "IN_DATA", "data.pkl"),
-        ],
-        target=[
-            ctx.path_to(ctx, "OUT_DATA", "df_training.pkl"),
-            ctx.path_to(ctx, "OUT_DATA", "df_validation.pkl"),
-        ],
-        name="train_test_split",
-    )
+    # select simulation models for which we run the analysis
+    import json
+    with open("src/models_to_run.json") as handle:
+        models_to_run = json.loads(handle.read())["models"]
+
+    for model in models_to_run:
+        ctx(
+            features="run_py_script",
+            source="train_test_split.py",
+            deps=[
+                ctx.path_to(ctx, "IN_DATA", f"samples-{model}-random.pkl"),
+            ],
+            target=[
+                ctx.path_to(ctx, "OUT_DATA", f"training-{model}-random.pkl"),
+                ctx.path_to(ctx, "OUT_DATA", f"testing-{model}-random.pkl"),
+            ],
+            name="train_test_split",
+            append=model
+        )
 
     ctx(
         features="run_py_script",

@@ -1,26 +1,35 @@
-import pickle
-
+import click
 import pandas as pd
 
 from bld.project_paths import project_paths_join as ppj
 
+
+NUM_TESTING_OBS_DICT = {
+    "kw_94_one": 30000,
+    "kw_97_basic": 3000,
+}
+
+
+@click.command()
+@click.argument("model", type=str)
+def main(model):
+    # split samples into training and testing set
+    file_name = ppj("IN_DATA", f"samples-{model}-random.pkl")
+    sample = pd.read_pickle(file_name)
+
+    n_obs_testing = NUM_TESTING_OBS_DICT[model]
+    testing = sample.iloc[:n_obs_testing]
+    training = sample.iloc[n_obs_testing:]
+
+    # add multiindex and save
+    for df, name in zip([testing, training], ["test", "train"]):
+        df.reset_index(drop=True, inplace=True)
+        df.rename_axis("iteration", inplace=True)
+        df.insert(0, "dataset", name)
+        df.set_index("dataset", append=True, inplace=True)
+        df.reorder_levels(["dataset", "iteration"])
+        df.to_pickle(ppj("OUT_DATA", f"{name}-{model}.pkl"))
+
+
 if __name__ == "__main__":
-    # load original data
-    df = pickle.load(open(ppj("IN_DATA", "data.pkl"), "rb"))
-
-    to_drop = ["qoi_tuition_subsidy_1000", "qoi_tuition_subsidy_1500"]
-    df = df.drop(to_drop, axis=1)
-
-    # create and save training and testing data set
-    df_validation = df.iloc[:25000]
-    df_validation.index = pd.MultiIndex.from_product(
-        [["validation"], range(len(df_validation))], names=["dataset", "iteration"]
-    )
-
-    df_training = df.iloc[25000:]
-    df_training.index = pd.MultiIndex.from_product(
-        [["training"], range(len(df_training))], names=["dataset", "iteration"]
-    )
-
-    pickle.dump(df_validation, open(ppj("OUT_DATA", "df_validation.pkl"), "wb"))
-    pickle.dump(df_training, open(ppj("OUT_DATA", "df_training.pkl"), "wb"))
+    main()  # pylint: disable=no-value-for-parameter
