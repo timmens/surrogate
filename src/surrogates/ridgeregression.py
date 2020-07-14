@@ -48,7 +48,7 @@ def fit(X, y, degree=1, fit_intercept=True, scale=True, alphas=None, cv=5, n_job
     return predictor
 
 
-def predict(X, predictor, threshold=np.inf):
+def predict(X, predictor, threshold=None):
     """Predict outcome using the fitted model and new data.
 
     Args:
@@ -64,6 +64,7 @@ def predict(X, predictor, threshold=np.inf):
         predictions (np.array): The predicted outcomes.
 
     """
+    threshold = np.inf if threshold is None else threshold
     predictor = deepcopy(predictor)
 
     XX = predictor.pipe.transform(X)

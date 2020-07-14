@@ -9,40 +9,52 @@ from collections import namedtuple
 
 import click
 import pandas as pd
-import scipy.special
 
 from bld.project_paths import project_paths_join as ppj
 
 
 Specification = namedtuple(
-    "Specification", ["model", "identifier", "data_kwargs", "model_kwargs"]
+    "Specification", ["model", "identifier", "n_obs", "fit_kwargs", "predict_kwargs"]
 )
 
 
-def _create_specifications(models, model_kwargs, n_features, n_obs, order_features):
-    data_kwargs_names = ["model", "n_features", "n_obs", "order_features"]
+def _create_specifications(models, n_obs, fit_kwargs, predict_kwargs, n_features):
+    """Create list of specifications to run given models, observations and model kwargs.
 
-    model_specs = []
+    Args:
+        model (str): (Surrogate) Model name.
+        n_obs (list): List of number of observations to use.
+        fit_kwargs (dict): kwargs with list of extra arguments passed to model specific
+            fitting function for each surrogate model.
+        predict_kws (dict): kwargs with list of extra arguments passed to model
+            specific predicting function for each surrogate model.
+        n_features (int): Number of input features in simulation model. Used to check
+            wether specifications are valid.
+
+    Returns:
+        specifications (list): List of namedtuple of form ``Specification``, containing
+            the specification parameter combinations.
+
+    """
+    specifications = []
     for model in models:
-        kwargs = model_kwargs[model]
-        model_kwargs_names = kwargs.keys()
+        try:
+            fit_kws = fit_kwargs[model]
+        except KeyError:
+            fit_kws = {}
+        try:
+            predict_kws = predict_kwargs[model]
+        except KeyError:
+            predict_kws = {}
 
-        combinations = _create_combinations(
-            model, n_features, n_obs, order_features, kwargs
-        )
-        combinations = combinations.apply(
-            lambda row: _series_to_namedtuple(
-                row, model, data_kwargs_names, model_kwargs_names
-            ),
-            axis=0,
-        )
-        model_specs.extend(combinations)
+        combinations = _create_combinations(model, n_obs, fit_kws, predict_kws)
+        specifications.extend(combinations)
 
-    specifications = [specs for specs in model_specs if _is_valid(specs)]
+    specifications = [spec for spec in specifications if _is_valid(spec, n_features)]
     return specifications
 
 
-def _create_combinations(model, n_features, n_obs, order_features, kwargs):
+def _create_combinations(model, n_obs, fit_kws, predict_kws):
     """Create data frame with cross-product combinations.
 
     Since different models use different (extra) keyword arguments, here, we flexibly
@@ -50,135 +62,125 @@ def _create_combinations(model, n_features, n_obs, order_features, kwargs):
     combinations.
 
     Args:
-        model (str): Model name.
-        n_features (list): List of number of features to use.
+        model (str): (Surrogate) Model name.
         n_obs (list): List of number of observations to use.
-        order_features (list): List of 0 or 1, denoting wether to use ordered features
-            or random feature selection when using less features than are available.
-        kwargs (dict): kwargs with list of extra arguments passed to model specific
+        fit_kws (dict): kwargs with list of extra arguments passed to model specific
             fitting function. Number of values can be more than 1.
+        predict_kws (dict): kwargs with list of extra arguments passed to model
+            specific predicting function. Number of values can be more than 1.
 
     Returns:
-        combinations (pd.DataFrame): Data frame in which each row represents one
-            parameter combination.
+        combinations (list): List of namedtuple of form ``Specification``, containing
+            the specification parameter combinations.
 
     """
-    kwargs_names = list(kwargs.keys())
-    kwargs_values = list(kwargs.values())
-
-    to_product = [[model], n_features, n_obs, order_features] + kwargs_values
+    to_product = [[model], n_obs] + list(fit_kws.values()) + list(predict_kws.values())
     combinations = pd.core.reshape.util.cartesian_product(to_product)
 
-    index = ["model", "n_features", "n_obs", "order_features"] + kwargs_names
+    fit_kws_names = list(fit_kws.keys())
+    predict_kws_names = list(predict_kws.keys())
+
+    index = ["model", "n_obs"] + fit_kws_names + predict_kws_names
     combinations = pd.DataFrame(combinations, index=index)
+
+    combinations = combinations.apply(
+        lambda row: _series_to_namedtuple(row, fit_kws_names, predict_kws_names),
+        axis=0,
+    )
     return combinations
 
 
-def _series_to_namedtuple(row, model, data_kwargs_names, model_kwargs_names):
-    """Convert pd.Series to namedtuple.
+def _series_to_namedtuple(row, fit_kws_names, predict_kws_names):
+    """Convert specification pd.Series to namedtuple.
 
     Args:
-        model (str): Model name.
-        row (pd.Series): Series containing corresponding values.
-        data_kwargs_names (list): List of index names (of row) for data_kwargs.
-        model_kwargs_names (list): List of index names (of row) for model kwargs.
+        row (pd.Series): Series containing corresponding specification values.
+        fit_kws_names (list): List of index names (of row) for fit_kws.
+        predict_kws_names (list): List of index names (of row) for predict_kws.
 
     Returns:
         spec (namedtuple.Specification): Specification named tuple.
-    """
-    data_kwargs = row[data_kwargs_names].to_dict()
-    model_kwargs = row[model_kwargs_names].to_dict()
 
-    data_identifier = _model_args_identifier(**data_kwargs)
-    model_identifier = model_kwargs_to_string(model, model_kwargs)
-    identifier = data_identifier + "_" + model_identifier
+    """
+    fit_kws = row[fit_kws_names].to_dict()
+    predict_kws = row[predict_kws_names].to_dict()
+    model = row["model"]
+    n_obs = row["n_obs"]
+
+    fit_kws_id = "_".join((f"{v}_{k}" for v, k in fit_kws.items()))
+    if len(predict_kws) == 0:
+        predict_kws_id = "None"
+    else:
+        predict_kws_id = "_".join((f"{v}_{k}" for v, k in predict_kws.items()))
+
+    identifier = f"{model}_n-{n_obs}_f_{fit_kws_id}_p_{predict_kws_id}"
 
     spec = Specification(
         model=model,
+        n_obs=n_obs,
         identifier=identifier,
-        data_kwargs=data_kwargs,
-        model_kwargs=model_kwargs,
+        fit_kwargs=fit_kws,
+        predict_kwargs=predict_kws,
     )
     return spec
 
 
-def _model_args_identifier(model, n_features, n_obs, order_features):
-    """Create unique model identifier given standard arguments.
-
-    Args:
-        model (str): Model name.
-        n_features (int): Number of features used in training.
-        n_obs (int): Number of observations used in training.
-        order_features (bool): Should the subset of features be selected with resepect
-            to some ordering.
-
-    Returns:
-        identifier (str): Unique identifier name.
-
-    """
-    order_features = 1 if order_features else 0
-    identifier = f"{model}_p{n_features}_n{n_obs}_o{order_features}"
-    return identifier
-
-
-def model_kwargs_to_string(model, kwargs):
-    """Create unique model identifier given additional keyword arguments.
-
-    Args:
-        model (str): Model name.
-        kwargs (dict): kwargs with list of extra arguments passed to model specific
-            fitting function. Number of values can be more than 1.
-
-    """
-    if model in ["polynomial", "ridge"]:
-        degree = kwargs["degree"]
-        identifier = f"degree{degree}"
-    elif model in ["neuralnetwork"]:
-        layers = "-".join(kwargs["layers"])
-        identifier = f"layers{layers}"
-    else:
-        raise NotImplementedError
-    return identifier
-
-
-def _is_valid(specification):
+def _is_valid(specification, n_features):
     """Check if model specification is valid.
 
-    Some specifications can turn out to be invalid. This functions helps in finding
-    them. For example, a 2nd degree polynomial model with 10 features cannot be fitted
-    using less than 45 observations.
+    Some specifications can turn out to be invalid or inefficient. This functions helps
+    in finding them. Examples:
+
+    - A neural network with 10 layers fitted on 1000 observations is not expected to
+        recover much information, so we drop it.
+    - A polynomial model of degree 2 with 10 input features has no unique solution with
+        less observations than binom(10, 2) + 21
 
     Args:
         specification (namedtuple): Named tuple with entries "model", "identifier",
-            "data_kwargs" and "model_kwargs".
-
+            "fit_kwargs" and "predict_kwargs".
+        n_features (int): Number of input features of simulation model.
 
     Returns:
         valid (bool): True if the specification is valid else False.
+
     """
-    if "polynomial" in specification.identifier:
-        degree = specification.model_kwargs["degree"]
-        n_features = specification.data_kwargs["n_features"]
-        n_obs = specification.data_kwargs["n_obs"]
-        valid = n_obs >= scipy.special.binom(n_features, degree) + 1
-    elif "neuralnet" in specification.identifier:
-        layers = specification.model_kwargs["layers"]
-        n_layers = len(layers)
-        valid = n_obs >= 1000 * n_layers
+    n_obs = specification.n_obs
+    if "neuralnet" == specification.model:
+        layers = specification.fit_kwargs["layers"]
+        valid = n_obs >= 1000 * len(layers)
+    elif "polynomial" == specification.model:
+        degree = specification.fit_kwargs["degree"]
+        valid = n_obs >= _number_coefficients_polynomial_model(n_features, degree)
     else:
         valid = True
     return valid
 
 
+def _number_coefficients_polynomial_model(n_features, degree):
+    """Return number of coefficients in polynomial model with interactions.
+
+    Args:
+        n_features (int): Number of input features in simulation model.
+        degree (int): Number of degrees of polynomial.
+
+    Returns:
+        n_coefficients (int): Number of coefficients.
+
+    """
+    n_coefficients = sum(n_features ** k for k in range(degree + 1))
+    return n_coefficients
+
+
 @click.command()
 @click.argument("model", type=str)
 def main(model):
-    data_path = ppj("IN_MODEL_SPECS", "specifications.json")
-    with open(data_path) as handle:
-        raw_specs = json.loads(handle.read())
+    spec_path = ppj("IN_MODEL_SPECS", f"{model}-specification.json")
+    with open(spec_path) as spec_file:
+        specs = json.loads(spec_file.read())
 
-    specs = raw_specs[model]
     specifications = _create_specifications(**specs)
+
     file_name = ppj("OUT_MODEL_SPECS", f"{model}-specifications.pkl")
     with open(file_name, "wb") as handle:
         pickle.dump(specifications, handle)

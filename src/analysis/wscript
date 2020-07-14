@@ -57,19 +57,3 @@ def build(ctx):
     #     ],
     #     name="bootstrap",
     # )
-
-    # ridge variable selection
-    ctx(
-        features="run_py_script",
-        source="variable_selection.py",
-        deps=[
-            ctx.path_to(ctx, "OUT_DATA", "df_training.pkl"),
-            ctx.path_to(ctx, "OUT_DATA", "df_validation.pkl"),
-            ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
-            ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
-        ],
-        target=[
-            ctx.path_to(ctx, "OUT_ANALYSIS", "variable_selection.pkl")
-        ],
-        name="variable_selection",
-    )

@@ -6,6 +6,8 @@ channels:
   - gpytorch
 
 dependencies:
+  - python=3.7
+  - python-graphviz=0.8
   - ipykernel=5.1.3
   - jupyterlab=1.1.4
   - matplotlib
@@ -19,20 +21,20 @@ dependencies:
   - gpytorch
   - xgboost
   - pip=19.2.3
-  - python=3.7
-  - python-graphviz=0.8
   - nb_conda_kernels=2.2.2
+  - pylint
+  - click
+  - black
+  - flake8
+  - tqdm
 
   - pip:
-    - click==7.0
-
     - gpflow==2.0.0rc1
     - tensorflow==2.0
     - tensorflow_probability==0.8
 
     - pre-commit==1.18.3
 
-    - matplotlib==3.1.1
     - nbsphinx==0.4.2
     - pytest==5.2.0
     - pytest-cov==2.7.1
