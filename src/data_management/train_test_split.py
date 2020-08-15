@@ -7,6 +7,7 @@ from bld.project_paths import project_paths_join as ppj
 NUM_TESTING_OBS_DICT = {
     "kw_94_one": 30000,
     "kw_97_basic": 3000,
+    "kw_97_extended": 6930,
 }
 
 
@@ -14,7 +15,7 @@ NUM_TESTING_OBS_DICT = {
 @click.argument("model", type=str)
 def main(model):
     # split samples into training and testing set
-    file_name = ppj("IN_DATA", f"samples-{model}-random.pkl")
+    file_name = ppj("IN_DATA", f"samples-{model}.pkl")
     sample = pd.read_pickle(file_name)
 
     n_obs_testing = NUM_TESTING_OBS_DICT[model]

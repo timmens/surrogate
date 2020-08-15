@@ -1,5 +1,8 @@
 """Shared utility functions."""
+import os
 import pickle
+import sys
+from contextlib import contextmanager
 from pathlib import Path
 
 import numpy as np
@@ -11,11 +14,7 @@ from src.specs import Specification
 
 
 def load_data(
-    model="kw_97_basic",
-    testing=False,
-    n_train=7000,
-    n_test=None,
-    sampling_suffix="random",
+    model="kw_97_basic", testing=False, n_train=7000, n_test=None,
 ):
     """Return training and testing data.
 
@@ -36,7 +35,7 @@ def load_data(
 
     """
     dataset = "test" if testing else "train"
-    data_path = ppj("OUT_DATA", f"{dataset}-{model}-{sampling_suffix}")
+    data_path = ppj("OUT_DATA", f"{dataset}-{model}.pkl")
 
     n_test = NUM_TESTING_OBS_DICT[model] if n_test is None else n_test
 
@@ -116,3 +115,14 @@ def subset_features(X, order_features, ordered_features, n_features):
 
     XX = X[feature_index].copy()
     return XX
+
+
+@contextmanager
+def suppress_stdout():
+    with open(os.devnull, "w") as devnull:
+        old_stdout = sys.stdout
+        sys.stdout = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = old_stdout

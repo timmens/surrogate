@@ -30,6 +30,8 @@ POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 
+from src.specs import Specification  # noqa: F401
+
 VERSION = "2.0.8"
 cwd = os.getcwd()
 join = os.path.join

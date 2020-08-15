@@ -12,7 +12,8 @@ def build(ctx):
         ctx(
             features="run_py_script",
             source="create_model_specs.py",
-            target=ctx.path_to(ctx, "OUT_MODEL_SPECS", "specifications.pkl"),
+            deps=ctx.path_to(ctx, "IN_MODEL_SPECS", f"{model}-specification.json"),
+            target=ctx.path_to(ctx, "OUT_MODEL_SPECS", f"{model}-specifications.pkl"),
             name="create_model_specs",
             append=model,
         )

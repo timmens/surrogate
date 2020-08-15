@@ -5,18 +5,13 @@ run using the specifications file ``src/specs/specifications.json``.
 """
 import json
 import pickle
-from collections import namedtuple
 
 import click
 import pandas as pd
-from scipy.stats import binom
+from scipy.special import binom
 
 from bld.project_paths import project_paths_join as ppj
-
-
-Specification = namedtuple(
-    "Specification", ["model", "identifier", "n_obs", "fit_kwargs", "predict_kwargs"]
-)
+from src.specs.specification import Specification
 
 
 def _create_specifications(models, n_obs, fit_kwargs, predict_kwargs, n_features):
@@ -171,7 +166,7 @@ def _number_coefficients_polynomial_model(n_features, degree):
     """
 
     def combinations(k):
-        return binom(n_features - 1 + k, n_features - 1)
+        return int(binom(n_features - 1 + k, n_features - 1))
 
     n_coefficients = sum(combinations(k) for k in range(degree + 1))
     return n_coefficients

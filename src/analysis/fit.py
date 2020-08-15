@@ -11,7 +11,7 @@ from tqdm import tqdm
 import src.surrogates as surrogates
 from bld.project_paths import project_paths_join as ppj
 from src.specs import Specification  # noqa: F401
-from src.utilities.utilities import load_data
+from src.utilities import load_data
 
 
 def _fit(simulation_model, specifications, save_path):
@@ -31,11 +31,8 @@ def _fit(simulation_model, specifications, save_path):
     """
 
     def to_parallelize(spec, simulation_model=simulation_model, save_path=save_path):
-        # prepare training data
         X, y = load_data(simulation_model, n_train=spec.n_obs)
-        # fit
         predictor = surrogates.fit(model_type=spec.model, X=X, y=y, **spec.fit_kwargs)
-        # save
         surrogates.save(predictor, save_path / spec.identifier, overwrite=True)
 
     with parallel_backend("threading", n_jobs=4):

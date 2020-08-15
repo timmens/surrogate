@@ -13,24 +13,25 @@ def build(ctx):
             features="run_py_script",
             source="train_test_split.py",
             deps=[
-                ctx.path_to(ctx, "IN_DATA", f"samples-{model}-random.pkl"),
+                ctx.path_to(ctx, "IN_DATA", f"samples-{model}.pkl"),
             ],
             target=[
-                ctx.path_to(ctx, "OUT_DATA", f"training-{model}-random.pkl"),
-                ctx.path_to(ctx, "OUT_DATA", f"testing-{model}-random.pkl"),
+                ctx.path_to(ctx, "OUT_DATA", f"train-{model}.pkl"),
+                ctx.path_to(ctx, "OUT_DATA", f"test-{model}.pkl"),
             ],
             name="train_test_split",
             append=model
         )
 
-    ctx(
-        features="run_py_script",
-        source="feature_importance.py",
-        deps=[
-            ctx.path_to(ctx, "IN_DATA", "kw_indices.pkl"),
-        ],
-        target=[
-            ctx.path_to(ctx, "OUT_DATA", "sorted_features.csv"),
-        ],
-        name="feature_importance",
-    )
+        # if model == "kw_94_one"
+        #     ctx(
+        #         features="run_py_script",
+        #         source="feature_importance.py",
+        #         deps=[
+        #             ctx.path_to(ctx, "IN_DATA", "kw_94_one-indices.pkl"),
+        #         ],
+        #         target=[
+        #             ctx.path_to(ctx, "OUT_DATA", "sorted_features.csv"),
+        #         ],
+        #         name="feature_importance",
+        #     )

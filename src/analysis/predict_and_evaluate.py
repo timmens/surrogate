@@ -12,7 +12,7 @@ from tqdm import tqdm
 import src.surrogates as surrogate
 from bld.project_paths import project_paths_join as ppj
 from src.specs import Specification  # noqa: F401
-from src.utilities.utilities import load_data
+from src.utilities import load_data
 
 
 def _predict(simulation_model, specifications, X):

@@ -40,7 +40,7 @@ def fit(X, y, degree=1, fit_intercept=True, scale=True, alphas=None, cv=5, n_job
     pipe = Pipeline(preprocess_steps)
     XX = pipe.fit_transform(X)
 
-    alphas = np.insert(np.logspace(-5, 1, 100), 0, 0) if alphas is None else alphas
+    alphas = np.insert(np.logspace(-5, 1, 25), 0, 0) if alphas is None else alphas
     rr = RidgeCV(alphas=alphas, fit_intercept=fit_intercept, cv=cv)
     rr = rr.fit(X=XX, y=y)
 

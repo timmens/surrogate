@@ -2,13 +2,17 @@
   "n_features": 88,
   "models": [
     "polynomial",
-    "ridge"
+    "ridge",
+    "nnet"
   ],
   "n_obs": [
+    200,
     500,
     700,
     1000,
+    2000,
     5000,
+    7000,
     10000
   ],
   "fit_kwargs": {
@@ -21,8 +25,7 @@
     "ridge": {
       "degree": [
         1,
-        2,
-        3
+        2
       ]
     },
     "nnet": {
@@ -53,7 +56,7 @@
     }
   },
   "predict_kwargs": {
-    "ridge": {
+    "_ridge": {
       "threshold": [
         null,
         0.1

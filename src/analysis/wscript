@@ -1,26 +1,34 @@
 #! python
 
-
 def build(ctx):
 
-    # select simulation models for which we run the analysis
+    import pandas as pd
     import json
+
+    # select simulation models for which we run the analysis
     with open("src/models_to_run.json") as handle:
         models_to_run = json.loads(handle.read())["models"]
 
     # fit models
     for model in models_to_run:
+
+        # get spec names for targets
+        specifications = pd.read_pickle(f"bld/out/specs/{model}-specifications.pkl")
+
         ctx(
             features="run_py_script",
             source="fit.py",
             deps=[
-                ctx.path_to(ctx, "OUT_DATA", "training-kw_94_one-random.pkl"),
-                ctx.path_to(ctx, "OUT_DATA", "training-kw_97_basic-random.pkl"),
-                ctx.path_to(ctx, "OUT_DATA", "sorted_features.csv"),
+                ctx.path_to(ctx, "OUT_MODEL_SPECS", f"{model}-specifications.pkl"),
+                ctx.path_to(ctx, "OUT_DATA", f"train-{model}.pkl"),
                 ctx.path_to(ctx, "IN_MODEL_CODE", "polynomialregression.py"),
                 ctx.path_to(ctx, "IN_MODEL_CODE", "ridgeregression.py"),
+                ctx.path_to(ctx, "IN_MODEL_CODE", "neuralnetwork.py"),
             ],
-            target=ctx.path_to(ctx, "OUT_FITTED_MODELS", f"{model}-fitted_models.pkl"),
+            target = [
+                ctx.path_to(ctx, "OUT_FITTED_MODELS", f"{model}/{spec.identifier}.pkl")
+                for spec in specifications
+            ],
             name="fit",
             append=model,
         )
@@ -29,11 +37,10 @@ def build(ctx):
         ctx(
             features="run_py_script",
             source="predict_and_evaluate.py",
-            deps=[
-                ctx.path_to(ctx, "OUT_DATA", "testing-kw_94_one-random.pkl"),
-                ctx.path_to(ctx, "OUT_DATA", "testing-kw_97_basic-random.pkl"),
-                ctx.path_to(ctx, "OUT_FITTED_MODELS", "fitted_models.pkl"),
-            ],
+            deps = [
+                ctx.path_to(ctx, "OUT_FITTED_MODELS", f"{model}/{spec.identifier}.pkl")
+                for spec in specifications
+            ] + [ctx.path_to(ctx, "OUT_DATA", f"test-{model}.pkl")],
             target=[
                 ctx.path_to(ctx, "OUT_ANALYSIS", f"{model}-predictions.pkl"),
                 ctx.path_to(ctx, "OUT_ANALYSIS", f"{model}-losses.csv"),
