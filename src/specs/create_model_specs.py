@@ -9,6 +9,7 @@ from collections import namedtuple
 
 import click
 import pandas as pd
+from scipy.stats import binom
 
 from bld.project_paths import project_paths_join as ppj
 
@@ -168,7 +169,11 @@ def _number_coefficients_polynomial_model(n_features, degree):
         n_coefficients (int): Number of coefficients.
 
     """
-    n_coefficients = sum(n_features ** k for k in range(degree + 1))
+
+    def combinations(k):
+        return binom(n_features - 1 + k, n_features - 1)
+
+    n_coefficients = sum(combinations(k) for k in range(degree + 1))
     return n_coefficients
 
 

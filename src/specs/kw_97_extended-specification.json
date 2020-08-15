@@ -1,0 +1,63 @@
+{
+  "n_features": 88,
+  "models": [
+    "polynomial",
+    "ridge"
+  ],
+  "n_obs": [
+    500,
+    700,
+    1000,
+    5000,
+    10000
+  ],
+  "fit_kwargs": {
+    "polynomial": {
+      "degree": [
+        1,
+        2
+      ]
+    },
+    "ridge": {
+      "degree": [
+        1,
+        2,
+        3
+      ]
+    },
+    "nnet": {
+      "layers": [
+        [
+          100,
+          100
+        ],
+        [
+          100,
+          100,
+          100
+        ],
+        [
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      ],
+      "n_epochs": [
+        100
+      ],
+      "n_batch_size": [
+        128
+      ]
+    }
+  },
+  "predict_kwargs": {
+    "ridge": {
+      "threshold": [
+        null,
+        0.1
+      ]
+    }
+  }
+}

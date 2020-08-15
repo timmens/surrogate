@@ -1,7 +1,6 @@
 {
   "_comment": "possible models: 'kw_94_one', 'kw_97_basic', 'kw_97_extended'",
   "models": [
-    "kw_94_one",
-    "kw_97_basic"
+    "kw_97_extended"
   ]
 }
