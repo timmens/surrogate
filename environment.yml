@@ -2,8 +2,6 @@ name: surrogate
 channels:
   - defaults
   - conda-forge
-  - pytorch
-  - gpytorch
 
 dependencies:
   - python=3.7
@@ -16,10 +14,7 @@ dependencies:
   - numpy
   - scikit-learn
   - keras
-  - pytorch
-  - torchvision
-  - gpytorch
-  - xgboost
+  - catboost
   - pip=19.2.3
   - nb_conda_kernels=2.2.2
   - pylint
@@ -29,10 +24,6 @@ dependencies:
   - tqdm
 
   - pip:
-    - gpflow==2.0.0rc1
-    - tensorflow==2.0
-    - tensorflow_probability==0.8
-
     - pre-commit==1.18.3
 
     - nbsphinx==0.4.2
