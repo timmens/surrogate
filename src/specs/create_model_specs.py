@@ -4,9 +4,9 @@ Generate a list of named tuples which represent model specifications that should
 run using the specifications file ``src/specs/specifications.json``.
 """
 import json
-import pickle
 
 import click
+import cloudpickle
 import pandas as pd
 from scipy.special import binom
 
@@ -183,7 +183,7 @@ def main(model):
 
     file_name = ppj("OUT_MODEL_SPECS", f"{model}-specifications.pkl")
     with open(file_name, "wb") as handle:
-        pickle.dump(specifications, handle)
+        cloudpickle.dump(specifications, handle)
 
 
 if __name__ == "__main__":

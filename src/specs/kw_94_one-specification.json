@@ -26,7 +26,7 @@
         2
       ]
     },
-    "nnet": {
+    "neuralnet": {
       "layers": [
         [
           54,

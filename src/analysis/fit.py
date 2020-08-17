@@ -1,8 +1,8 @@
 """Load specific model and fit to training data set."""
-import pickle
 from pathlib import Path
 
 import click
+import cloudpickle
 from joblib import delayed
 from joblib import Parallel
 from joblib import parallel_backend
@@ -43,7 +43,7 @@ def _fit(simulation_model, specifications, save_path):
 @click.argument("model", type=str)
 def main(model):
     with open(ppj("OUT_MODEL_SPECS", f"{model}-specifications.pkl"), "rb") as f:
-        specifications = pickle.load(f)
+        specifications = cloudpickle.load(f)
 
     save_path = Path(ppj("OUT_FITTED_MODELS")) / model
     save_path.mkdir(parents=True, exist_ok=True)

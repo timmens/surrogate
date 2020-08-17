@@ -19,8 +19,8 @@ def fit(X, y, layers, n_epochs=100, n_batch_size=20):
     Args:
         X (pd.DataFrame): Data on features.
         y (pd.Series or np.ndarray): Data on outcomes.
-        layers (list or tuple): List or tuple specifying the number of hidden layers and
-            hidden nodes in the neural network.
+        layers (str): str specifying the number of hidden layers and hidden nodes in the
+            neural network. Example: "100-100-100".
         n_epochs (int): Number of epochs used for model fitting.
         n_batch_size (int): Batch size used for model fitting.
 
@@ -86,15 +86,13 @@ def _get_build_regressor_func(input_dim, layers):
         build_regressor (function): Function to build a neural net regressor.
 
     """
-    func_layers = [
-        f"regressor.add(Dense(units={u}, activation='relu'))" for u in layers[1:]
-    ]
-    func_layers_code = ";".join(func_layers)
+    layers = [int(n) for n in layers.split("-")]
 
     def build_regressor():
         regressor = Sequential()
         regressor.add(Dense(units=layers[0], activation="relu", input_dim=input_dim))
-        exec(func_layers_code)
+        for u in layers[1:]:
+            regressor.add(Dense(units=u, activation="relu"))
         regressor.add(Dense(units=1, activation="linear"))
         regressor.compile(optimizer="adam", loss="mean_absolute_error")
         return regressor

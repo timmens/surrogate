@@ -1,7 +1,6 @@
 """Predict outcomes of test set using the fitted models and save predictions."""
-import pickle
-
 import click
+import cloudpickle
 import pandas as pd
 from joblib import delayed
 from joblib import Parallel
@@ -130,7 +129,7 @@ def _compute_loss(true, predicted, metrics=None):
 def main(model):
     # predict using fitted models
     with open(ppj("OUT_MODEL_SPECS", f"{model}-specifications.pkl"), "rb") as f:
-        specifications = pickle.load(f)
+        specifications = cloudpickle.load(f)
 
     X, y = load_data(model, testing=True)
     predictions = _predict(model, specifications, X)

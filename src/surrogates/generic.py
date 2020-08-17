@@ -13,13 +13,16 @@ Example:
 ```
 
 """
-import pickle
 import warnings
 from pathlib import Path
 
+import cloudpickle
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 
+from src.surrogates import catboost
+from src.surrogates import neuralnetwork
 from src.surrogates import polynomialregression
 from src.surrogates import ridgeregression
 
@@ -27,6 +30,8 @@ from src.surrogates import ridgeregression
 MODEL_MODULES = {
     "polynomial": polynomialregression,
     "ridge": ridgeregression,
+    "neuralnet": neuralnetwork,
+    "catboost": catboost,
 }
 
 
@@ -94,9 +99,13 @@ def save(predictor, file_path="", overwrite=False):
     f = Path(file_path)
     file_path = f if f.suffix == ".pkl" else f.with_suffix(".pkl")
 
+    if "neuralnet" in file_path.stem:
+        predictor.model.model.save(file_path.with_suffix(".nnet_model"))
+        predictor = predictor._replace(model=None)
+
     if not file_path.is_file() or overwrite:
         with open(file_path, "wb") as f:
-            pickle.dump(predictor, f)
+            cloudpickle.dump(predictor, f)
     else:
         warnings.warn("File already exists. No actions taken.", UserWarning)
 
@@ -116,7 +125,12 @@ def load(file_path):
     f = Path(file_path)
     file_path = f if f.suffix == ".pkl" else f.with_suffix(".pkl")
     with open(file_path, "rb") as f:
-        predictor = pickle.load(f)
+        predictor = cloudpickle.load(f)
+
+    if "neuralnet" in file_path.stem:
+        model = tf.keras.models.load_model(file_path.with_suffix(".nnet_model"))
+        predictor = predictor._replace(model=model)
+
     return predictor
 
 
@@ -141,6 +155,7 @@ def _model_name_to_module_name(model_name):
         "PolynomialPredictor": "polynomial",
         "RidgePredictor": "ridge",
         "NeuralnetPredictor": "neuralnet",
+        "CatBoostRegressor": "catboost",
     }
     translated = translation[model_name]
     return translated
