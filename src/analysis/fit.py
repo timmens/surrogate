@@ -3,9 +3,6 @@ from pathlib import Path
 
 import click
 import cloudpickle
-from joblib import delayed
-from joblib import Parallel
-from joblib import parallel_backend
 from tqdm import tqdm
 
 import src.surrogates as surrogates
@@ -15,7 +12,7 @@ from src.utilities import load_data
 
 
 def _fit(simulation_model, specifications, save_path):
-    """Fit all models specified in ``specifications``.
+    """Fit all models specified in ``specifications`` and save to disc.
 
     Args:
         simulation_model (str): (Economic) simulation model. Must be in ['kw_94_one',
@@ -30,13 +27,13 @@ def _fit(simulation_model, specifications, save_path):
 
     """
 
-    def to_parallelize(spec, simulation_model=simulation_model, save_path=save_path):
+    def to_run(spec):
         X, y = load_data(simulation_model, n_train=spec.n_obs)
-        predictor = surrogates.fit(model_type=spec.model, X=X, y=y, **spec.fit_kwargs)
+        predictor = surrogates.fit(spec.model, X, y, **spec.fit_kwargs)
         surrogates.save(predictor, save_path / spec.identifier, overwrite=True)
 
-    with parallel_backend("threading", n_jobs=4):
-        Parallel()(delayed(to_parallelize)(spec) for spec in tqdm(specifications))
+    for spec in tqdm(specifications):
+        to_run(spec)
 
 
 @click.command()

@@ -42,8 +42,8 @@ def build(ctx):
                 for spec in specifications
             ] + [ctx.path_to(ctx, "OUT_DATA", f"test-{model}.pkl")],
             target=[
-                ctx.path_to(ctx, "OUT_ANALYSIS", f"{model}-predictions.pkl"),
-                ctx.path_to(ctx, "OUT_ANALYSIS", f"{model}-losses.csv"),
+                ctx.path_to(ctx, "OUT_ANALYSIS", f"{model}/predictions.pkl"),
+                ctx.path_to(ctx, "OUT_ANALYSIS", f"{model}/losses.csv"),
             ],
             name="predict_and_evaluate",
             append=model,

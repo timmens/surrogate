@@ -7,7 +7,7 @@ from bld.project_paths import project_paths_join as ppj
 NUM_TESTING_OBS_DICT = {
     "kw_94_one": 30000,
     "kw_97_basic": 3000,
-    "kw_97_extended": 6930,
+    "kw_97_extended": 8600,
 }
 
 

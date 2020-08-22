@@ -110,6 +110,7 @@ def _series_to_namedtuple(row, fit_kws_names, predict_kws_names):
         predict_kws_id = "_".join((f"{v}_{k}" for v, k in predict_kws.items()))
 
     identifier = f"{model}_n-{n_obs}_f_{fit_kws_id}_p_{predict_kws_id}"
+    identifier = identifier.replace(".", "")
 
     spec = Specification(
         model=model,

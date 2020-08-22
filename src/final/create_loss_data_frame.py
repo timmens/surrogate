@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import click
 import pandas as pd
 
@@ -12,11 +14,15 @@ def _kwarg_simplifier(kwargs):
 @click.command()
 @click.argument("model", type=str)
 def main(model):
-    df = pd.read_csv(ppj("OUT_ANALYSIS", f"{model}-losses.csv"))
+    load_path = Path(ppj("OUT_ANALYSIS")) / model / "losses.csv"
+    df = pd.read_csv(load_path)
+
     df = df.rename({"model": "method"}, axis=1)
     df["kwargs"] = df["kwargs"].apply(_kwarg_simplifier)
     df = df.set_index(["method", "n_obs", "kwargs"])
-    df.to_csv(ppj("OUT_FINAL", f"{model}-losses_tidy.csv"))
+
+    save_path = Path(ppj("OUT_FINAL")) / f"{model}-losses_tidy.csv"
+    df.to_csv(save_path)
 
 
 if __name__ == "__main__":

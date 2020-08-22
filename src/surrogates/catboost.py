@@ -11,7 +11,7 @@ from src.utilities import suppress_stdout
 CatBoostPredictor = namedtuple("CatBoostPredictor", ["model", "pipe"])
 
 
-def fit(X, y, iterations=200, learning_rate=0.1, depth=8, loss_function="MAE"):
+def fit(X, y, iterations=1_000, learning_rate=0.05, depth=8, loss_function="MAE"):
     """Fit a boosted tree using catboost.
 
     Args:

@@ -40,7 +40,7 @@ def build(ctx):
             features="run_py_script",
             source="create_loss_data_frame.py",
             deps=[
-                ctx.path_to(ctx, "OUT_ANALYSIS", f"{model}-losses.csv"),
+                ctx.path_to(ctx, "OUT_ANALYSIS", f"{model}/losses.csv"),
             ],
             target=[
                 ctx.path_to(ctx, "OUT_FINAL", f"{model}-losses_tidy.csv")
@@ -57,7 +57,7 @@ def build(ctx):
                 ctx.path_to(ctx, "OUT_FINAL", f"{model}-losses_tidy.csv")
             ],
             target=[
-                ctx.path_to(ctx, "OUT_FIGURES", f"{model}-mae_plot.pdf")
+                ctx.path_to(ctx, "OUT_FIGURES", f"{model}-mae_plot.png")
             ],
             name="mae_plot",
             append=model,
