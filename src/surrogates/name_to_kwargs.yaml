@@ -1,13 +1,14 @@
 linear:
-    model: "PolynomialRegressor"
+    model: PolynomialRegressor
     kwargs:
         degree: 1
         fit_intercept: True
         scale: True
         n_jobs: 4
 
+
 quadratic:
-    model: "PolynomialRegressor"
+    model: PolynomialRegressor
     kwargs:
         degree: 2
         fit_intercept: True
@@ -15,11 +16,37 @@ quadratic:
         scale: True
         n_jobs: 4
 
-ridge_quadratic_full:
-    model: "RidgeRegressor"
+
+quadratic_full:
+    model: PolynomialRegressor
     kwargs:
         degree: 2
         fit_intercept: True
         interaction: True
         scale: True
         n_jobs: 4
+
+
+ridge_quadratic_full:
+    model: RidgeRegressor
+    kwargs:
+        degree: 2
+        fit_intercept: True
+        interaction: True
+        scale: True
+        n_jobs: 4
+
+
+catboost:
+    model: CatBoostRegressor
+    kwargs:
+
+
+neuralnet_paper_small:
+    model: NeuralnetRegressor
+    kwargs:
+
+
+neuralnet_paper_large:
+    model: NeuralnetRegressor
+    kwargs:

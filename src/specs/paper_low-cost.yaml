@@ -1,0 +1,19 @@
+data_set: "kw_97_extended"
+
+surrogates: ["linear", "quadratic", "ridge_quadratic_full"]
+
+n_features: 88
+n_obs: [
+    100,
+    200,
+    400,
+    500,
+    700,
+    800,
+    1000,
+    2000,
+    4000,
+    5000,
+    8000,
+    10000
+    ]
