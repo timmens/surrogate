@@ -152,10 +152,10 @@ def _model_name_to_module_name(model_name):
 
     """
     translation = {
-        "PolynomialPredictor": "polynomial",
-        "RidgePredictor": "ridge",
-        "NeuralnetPredictor": "neuralnet",
-        "CatBoostPredictor": "catboost",
+        "PolynomialRegressor": "polynomial",
+        "RidgeRegressor": "ridge",
+        "NeuralnetRegressor": "neuralnet",
+        "CatBoostRegressor": "catboost",
     }
     translated = translation[model_name]
     return translated
