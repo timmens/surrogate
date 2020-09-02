@@ -1,4 +1,4 @@
 from setuptools import setup
 
 
-setup(name="project_name", packages=["bld", "src"])
+setup(name="surrogate", version="0.0.1")
