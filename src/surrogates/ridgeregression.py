@@ -3,21 +3,12 @@ from copy import deepcopy
 
 import numpy as np
 from sklearn.linear_model import RidgeCV
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.preprocessing import StandardScaler
+
+from src.surrogates.feature_transformer import FeatureTransformer
 
 
 def fit(
-    X,
-    y,
-    degree=1,
-    fit_intercept=True,
-    interaction=True,
-    scale=True,
-    alphas=None,
-    cv=5,
-    n_jobs=1,
+    X, y, degree=1, fit_intercept=True, interaction=True, scale=True, alphas=None, cv=5,
 ):
     """Fit and return a (polynomial) ridge regression model.
 
@@ -40,11 +31,7 @@ def fit(
             - pipe : sklearn.pipeline.Pipeline
 
     """
-    preprocess_steps = [("poly", PolynomialFeatures(degree=degree, include_bias=False))]
-    if scale:
-        preprocess_steps += [("scale", StandardScaler())]
-
-    pipe = Pipeline(preprocess_steps)
+    pipe = FeatureTransformer(degree, interaction, scale)
     XX = pipe.fit_transform(X)
 
     alphas = np.insert(np.logspace(-5, 1, 25), 0, 0) if alphas is None else alphas

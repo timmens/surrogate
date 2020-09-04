@@ -1,9 +1,6 @@
 """Function wrapper to use catboost for regression."""
 from catboost import CatBoostRegressor
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-
-from src.utilities import suppress_stdout
 
 
 def fit(X, y, iterations=1_000, learning_rate=0.05, depth=8, loss_function="MAE"):
@@ -24,9 +21,7 @@ def fit(X, y, iterations=1_000, learning_rate=0.05, depth=8, loss_function="MAE"
             - pipe : sklearn.pipeline.Pipeline
 
     """
-    preprocess_steps = [("scale", StandardScaler())]
-    pipe = Pipeline(preprocess_steps)
-
+    pipe = StandardScaler()
     XX = pipe.fit_transform(X)
 
     model = CatBoostRegressor(
@@ -35,8 +30,7 @@ def fit(X, y, iterations=1_000, learning_rate=0.05, depth=8, loss_function="MAE"
         depth=depth,
         loss_function=loss_function,
     )
-    with suppress_stdout():
-        model.fit(XX, y)
+    model.fit(XX, y, verbose=False)
 
     predictor = {"model": model, "pipe": pipe}
     return predictor

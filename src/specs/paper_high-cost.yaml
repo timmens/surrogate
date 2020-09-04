@@ -1,19 +1,17 @@
+run: False
 data_set: kw_97_extended
-
 surrogates:
     - quadratic_full
     - catboost
     - neuralnet_paper_small
     - neuralnet_paper_big
-
-n_features: 88
-n_obs: [
-    10000,
-    12000,
-    14000,
-    16000,
-    18000,
-    20000,
-    22000,
-    23000
-    ]
+n_obs:
+    - 10000
+    - 12000
+    - 14000
+    - 16000
+    - 18000
+    - 20000
+    - 22000
+    - 24000
+    - 25000

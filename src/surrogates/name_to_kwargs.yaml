@@ -34,7 +34,6 @@ ridge_quadratic_full:
         fit_intercept: True
         interaction: True
         scale: True
-        n_jobs: 4
 
 
 catboost:

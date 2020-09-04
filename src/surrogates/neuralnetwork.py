@@ -2,7 +2,6 @@
 from keras import Sequential
 from keras.layers import Dense
 from keras.wrappers.scikit_learn import KerasRegressor
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 
@@ -24,9 +23,7 @@ def fit(X, y, layers, n_epochs=100, n_batch_size=20):
             - pipe : sklearn.pipeline.Pipeline
 
     """
-    preprocess_steps = [("scale", StandardScaler())]
-    pipe = Pipeline(preprocess_steps)
-
+    pipe = StandardScaler()
     XX = pipe.fit_transform(X)
 
     build_regressor = _get_build_regressor_func(input_dim=XX.shape[1], layers=layers)

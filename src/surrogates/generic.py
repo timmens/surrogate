@@ -27,14 +27,6 @@ from src.surrogates import polynomialregression
 from src.surrogates import ridgeregression
 
 
-MODEL_MODULES = {
-    "polynomial": polynomialregression,
-    "ridge": ridgeregression,
-    "neuralnet": neuralnetwork,
-    "catboost": catboost,
-}
-
-
 def fit(model_type, X, y, **kwargs):
     """Fit and return a surrogate model.
 
@@ -53,10 +45,10 @@ def fit(model_type, X, y, **kwargs):
     assert len(X) == len(y)
     assert isinstance(X, (np.ndarray, pd.DataFrame, pd.Series))
     assert isinstance(y, (np.ndarray, pd.DataFrame, pd.Series))
-    assert model_type in MODEL_MODULES.keys()
 
-    module = MODEL_MODULES[model_type]
+    module = _model_name_to_module(model_type)
     predictor = module.fit(X, y, **kwargs)
+    predictor["model_type"] = model_type
     return predictor
 
 
@@ -75,9 +67,7 @@ def predict(X, predictor, **kwargs):
 
     """
     assert isinstance(X, (np.ndarray, pd.DataFrame, pd.Series))
-
-    model_type = _model_name_to_module_name(type(predictor).__name__)
-    module = MODEL_MODULES[model_type]
+    module = _model_name_to_module(predictor["model_type"])
     predictions = module.predict(X, predictor, **kwargs)
     return predictions
 
@@ -134,11 +124,11 @@ def load(file_path):
     return predictor
 
 
-def _model_name_to_module_name(model_name):
+def _model_name_to_module(model_type):
     """Translate name of predictors to module names.
 
     Args:
-        model_name (str): Type name of surrogate predictors.
+        model_type (str): Type name of surrogate predictors.
 
     Returns:
         translated (str): Name of module corresponding to name of predictor.
@@ -151,11 +141,15 @@ def _model_name_to_module_name(model_name):
     "polynomial"
 
     """
-    translation = {
-        "PolynomialRegressor": "polynomial",
-        "RidgeRegressor": "ridge",
-        "NeuralnetRegressor": "neuralnet",
-        "CatBoostRegressor": "catboost",
+    modules = {
+        "PolynomialRegressor": polynomialregression,
+        "RidgeRegressor": ridgeregression,
+        "NeuralnetRegressor": neuralnetwork,
+        "CatBoostRegressor": catboost,
     }
-    translated = translation[model_name]
-    return translated
+    try:
+        module = modules[model_type]
+    except KeyError:
+        print(f"{model_type} regressor not implemented.")
+        raise KeyError
+    return module
