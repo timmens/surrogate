@@ -25,7 +25,7 @@ def read_files(files):
     return specifications
 
 
-def filter_specifications(specifications):
+def filter_specification_that_are_run(specifications):
     """Remove specifications that have key "run" set to False and remove key "run"."""
     specifications = {
         name: spec for name, spec in specifications.items() if spec["run"]
@@ -35,9 +35,18 @@ def filter_specifications(specifications):
     return specifications
 
 
-def read_specifications():
+def remove_xscale_key(specifications):
+    specifications = specifications.copy()
+    for _, spec in specifications.items():
+        spec.pop("xscale", None)
+    return specifications
+
+
+def read_specifications(fitting=True):
     """Read specification files of projects that shall be run."""
     files = gather_spec_files()
     specifications = read_files(files)
-    specifications = filter_specifications(specifications)
+    specifications = filter_specification_that_are_run(specifications)
+    if fitting:
+        specifications = remove_xscale_key(specifications)
     return specifications
