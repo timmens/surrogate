@@ -1,5 +1,4 @@
-run: True
-
+run: False
 
 # keyword arguments for fit function
 data_set: kw_97_extended
@@ -27,7 +26,6 @@ n_obs:
     - 9000
     - 10000
 ignore_warnings: True
-
 
 # plot specifications
 xscale: log

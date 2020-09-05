@@ -76,7 +76,7 @@ def save(predictor, file_path="", overwrite=False):
     """Save fitted model to disc.
 
     Args:
-        predictor (namedtuple): Named tuple with entries 'model' for the fitted model
+        predictor (dict): Dictionary with entries 'model' for the fitted model
             and 'pipe' for the pre-processing pipeline. 'pipe' is a
             sklearn.pipeline.Pipeline object. 'model' depends on the module used.
         file_path (str): File path. Defaults to active path of session.
@@ -90,8 +90,8 @@ def save(predictor, file_path="", overwrite=False):
     file_path = f if f.suffix == ".pkl" else f.with_suffix(".pkl")
 
     if "neuralnet" in file_path.stem:
-        predictor.model.model.save(file_path.with_suffix(".nnet_model"))
-        predictor = predictor._replace(model=None)
+        predictor["model"].model.save(file_path.with_suffix(".nnet_model"))
+        predictor["model"] = None
 
     if not file_path.is_file() or overwrite:
         with open(file_path, "wb") as f:
@@ -119,7 +119,7 @@ def load(file_path):
 
     if "neuralnet" in file_path.stem:
         model = tf.keras.models.load_model(file_path.with_suffix(".nnet_model"))
-        predictor = predictor._replace(model=model)
+        predictor["model"] = model
 
     return predictor
 

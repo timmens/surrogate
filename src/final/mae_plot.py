@@ -34,8 +34,9 @@ def save_fig(path, fig):
 def main():
     losses_dict = load_losses()
     specifications = read_specifications()
-    for project_name, losses in losses_dict.items():
-        fig = mae_plot(losses, specifications[project_name])
+    for project_name, spec in specifications.items():
+        losses = losses_dict[project_name]
+        fig = mae_plot(losses, spec)
         path = BLD / "figures" / project_name
         path.mkdir(parents=True, exist_ok=True)
         save_fig(path, fig)

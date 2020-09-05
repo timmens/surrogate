@@ -6,7 +6,6 @@ linear:
         scale: True
         n_jobs: 4
 
-
 quadratic:
     model: PolynomialRegressor
     kwargs:
@@ -16,7 +15,6 @@ quadratic:
         scale: True
         n_jobs: 4
 
-
 quadratic_full:
     model: PolynomialRegressor
     kwargs:
@@ -25,7 +23,6 @@ quadratic_full:
         interaction: True
         scale: True
         n_jobs: 4
-
 
 ridge_quadratic_full:
     model: RidgeRegressor
@@ -44,16 +41,32 @@ cubic:
         scale: True
         n_jobs: 4
 
-catboost:
+catboost_slow:
     model: CatBoostRegressor
     kwargs:
+        iterations: 1500
+        learning_rate: 0.03
+        depth: 8
+        loss_function: MAE
 
+catboost_fast:
+    model: CatBoostRegressor
+    kwargs:
+        iterations: 1000
+        learning_rate: 0.05
+        depth: 8
+        loss_function: MAE
 
 neuralnet_paper_small:
     model: NeuralnetRegressor
     kwargs:
-
+        layers: "44-44-44-44-44"
+        n_epochs: 200
+        n_batch_size: 25
 
 neuralnet_paper_large:
     model: NeuralnetRegressor
     kwargs:
+        layers: "88-88-88-88-88"
+        n_epochs: 250
+        n_batch_size: 25
