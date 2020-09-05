@@ -1,5 +1,6 @@
 """Load specific model and fit to training data set."""
 import itertools
+import random
 import warnings
 
 from tqdm import tqdm
@@ -30,8 +31,9 @@ def fit_surrogates(data_set, surrogates, n_obs, ignore_warnings):
 
     """
     predictors_and_id = {}
-    length = len(surrogates) * len(n_obs)
-    for surrogate_type, n in tqdm(itertools.product(surrogates, n_obs), total=length):
+    to_iterate = list(itertools.product(surrogates, n_obs))
+    random.shuffle(to_iterate)  # shuffle to get a more accurate eta estimate with tqdm
+    for surrogate_type, n in tqdm(to_iterate):
         X, y = load_data(data_set, n_train=n)
         predictor = _fit_internal(X, y, surrogate_type, ignore_warnings)
         id_ = _make_id(surrogate_type, n)
