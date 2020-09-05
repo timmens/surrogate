@@ -19,6 +19,7 @@ def mae_plot(losses):
     ax = fig.get_axes()[0]
     fig.set_size_inches(11.7, 8.27)
     ax.legend(loc="upper right")
+    ax.set_xscale("log")
     return fig
 
 
