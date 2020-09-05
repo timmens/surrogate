@@ -1,5 +1,6 @@
 run: False
 data_set: kw_97_extended
+ignore_warnings: False
 surrogates:
     - quadratic_full
     - catboost

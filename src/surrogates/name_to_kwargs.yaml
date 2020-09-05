@@ -35,6 +35,14 @@ ridge_quadratic_full:
         interaction: True
         scale: True
 
+cubic:
+    model: PolynomialRegressor
+    kwargs:
+        degree: 3
+        fit_intercept: True
+        interaction: False
+        scale: True
+        n_jobs: 4
 
 catboost:
     model: CatBoostRegressor

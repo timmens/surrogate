@@ -1,8 +1,10 @@
 run: True
 data_set: kw_97_extended
+ignore_warnings: True
 surrogates:
     - linear
     - quadratic
+    - cubic
     - ridge_quadratic_full
 n_obs:
     - 100
