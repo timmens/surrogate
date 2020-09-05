@@ -58,13 +58,13 @@ def predict(X, predictor, threshold=None):
         predictions (np.array): The predicted outcomes.
 
     """
-    threshold = np.inf if threshold is None else threshold
+    threshold = 0 if threshold is None else threshold
     predictor = deepcopy(predictor)
 
     XX = predictor["pipe"].transform(X)
 
     coef = predictor["model"].coef_.copy()
-    mask = np.abs(coef) < threshold
+    mask = np.abs(coef) < 0
     predictor["model"].coef_[mask] = 0
 
     predictions = predictor["model"].predict(XX)
