@@ -4,19 +4,17 @@ run: True
 data_set: kw_97_extended
 surrogates:
     - quadratic_full
-    - catboost_slow
-    - catboost_fast
-    - neuralnet_paper_small
-    - neuralnet_paper_large
+    - catboost_quadratic_paper
+    - neuralnet_small_paper
+    - neuralnet_large_paper
 n_obs:
-    - 500
-      # - 10000
-      # - 12000
-      # - 14000
-      # - 16000
-      # - 18000
-      # - 20000
-      # - 22000
-      # - 24000
-      # - 25000
+    - 10000
+    - 12000
+    - 14000
+    - 16000
+    - 18000
+    - 20000
+    - 22000
+    - 24000
+    - 25000
 ignore_warnings: False
