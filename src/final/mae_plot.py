@@ -22,7 +22,7 @@ def mae_plot(losses, specification):
     fig.set_size_inches(11.7, 8.27)
     ax.legend(loc="upper right")
     ax.set_xscale(xscale)
-    ax.set_ylim(0, 1.1 * losses["mae"].max())
+    ax.set_ylim(0.9 * losses["mae"].min(), 1.1 * losses["mae"].max())
     return fig
 
 
