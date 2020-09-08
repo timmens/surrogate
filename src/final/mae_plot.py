@@ -1,5 +1,6 @@
 import pandas as pd
 import seaborn as sns
+from matplotlib.ticker import ScalarFormatter
 
 from src.config import BLD
 from src.specs import read_specifications
@@ -16,12 +17,16 @@ def load_losses():
 def mae_plot(losses, specification):
     """Make plot from losses data frame."""
     xscale = specification.get("xscale", "linear")
+    xticks = specification.get("xticks", None)
     plot = sns.lineplot(x="n_obs", y="mae", hue="model", data=losses)
     fig = plot.get_figure()
     ax = fig.get_axes()[0]
     fig.set_size_inches(11.7, 8.27)
     ax.legend(loc="upper right")
     ax.set_xscale(xscale)
+    if xticks is not None:
+        ax.set_xticks(xticks)
+    ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.set_ylim(0.9 * losses["mae"].min(), 1.1 * losses["mae"].max())
     return fig
 
