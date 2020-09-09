@@ -1,12 +1,12 @@
-
 run: True
 
-# keyword arguments for fit function
-data_set: kw_97_extended
-surrogates:
+data_set:
+    - kw_97_extended
+surrogate_type:
+    - linear
     - quadratic
     - catboost_quadratic_paper
 n_obs:
+    - 500
     - 5000
     - 15000
-ignore_warnings: True

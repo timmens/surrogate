@@ -35,10 +35,11 @@ def filter_specification_that_are_run(specifications):
     return specifications
 
 
-def remove_xscale_key(specifications):
+def remove_plotting_keys(specifications):
     specifications = specifications.copy()
     for _, spec in specifications.items():
         spec.pop("xscale", None)
+        spec.pop("xticks", None)
     return specifications
 
 
@@ -48,5 +49,5 @@ def read_specifications(fitting=True):
     specifications = read_files(files)
     specifications = filter_specification_that_are_run(specifications)
     if fitting:
-        specifications = remove_xscale_key(specifications)
+        specifications = remove_plotting_keys(specifications)
     return specifications

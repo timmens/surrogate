@@ -9,3 +9,5 @@ bld/
 *__pycache__
 q.log
 *.ipynb_checkpoints/
+
+.pytask.sqlite3

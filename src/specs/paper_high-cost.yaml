@@ -1,8 +1,9 @@
 run: False
 
 # keyword arguments for fit function
-data_set: kw_97_extended
-surrogates:
+data_set:
+    - kw_97_extended
+surrogate_type:
     - quadratic_full
     - catboost_quadratic_paper
     - neuralnet_small_paper
@@ -17,4 +18,3 @@ n_obs:
     - 22000
     - 24000
     - 25000
-ignore_warnings: False

@@ -1,9 +1,9 @@
-"""Load specific model and fit to training data set."""
+"""Load model specifications and fit to training data set."""
 import itertools
-import random
 import warnings
 
-from tqdm import tqdm
+import pandas as pd
+import pytask
 
 import src.surrogates as surrogates
 from src.config import BLD
@@ -12,88 +12,57 @@ from src.shared import load_data
 from src.specs import read_specifications
 
 
-def fit_surrogates(data_set, surrogates, n_obs, ignore_warnings):
+def fit_surrogate(data_set, surrogate_type, n_obs, ignore_warnings=True):
     """Fit all models specified in ``specifications`` and save to disc.
 
     Args:
         data_set (list): List of names of data sets which shall be used for the
             training procedure. Must be a subset of ['kw_94_one', 'kw_97_basic',
             'kw_97_extended'].
-        surrogates (list): List of names of surrogate models which shall be
-            used for fitting. Elements must be specified in
-            ``src/surrogates/name_to_kwargs.yaml``.
-        n_obs (list): List of number of observations to be use.
-        ignore_warnings (boold): Should warnings be suppressed.
+        surrogate_type (str): Names of surrogate model which is used for fitting. Must be
+            specified in ``src/surrogates/name_to_kwargs.yaml``.
+        n_obs (str): Number of observations to be used.
 
     Returns:
-        predictors_and_id (dict): Dictionary containing fitted regression models. Keys
-            are the model id and values the respective models.
+        fitted_surrgate (dict): Dictionary containing at least 'model' and 'pipe'.
+            Model is of type ``surrogate_type``.
 
     """
-    predictors_and_id = {}
-    to_iterate = list(itertools.product(surrogates, n_obs))
-    random.shuffle(to_iterate)  # shuffle to get a more accurate eta estimate with tqdm
-    for surrogate_type, n in tqdm(to_iterate):
-        X, y = load_data(data_set, n_train=n)
-        predictor = _fit_internal(X, y, surrogate_type, ignore_warnings)
-        id_ = _make_id(surrogate_type, n)
-        predictors_and_id[id_] = predictor
-    return predictors_and_id
-
-
-def save_surrogates(predictors_and_id, path):
-    """Save models to path.
-
-    Args:
-        predictors_and_id (dict): Dictionary containing fitted regression models. Keys
-            are the model id and values the respective models.
-        path (pathlib.Path): Path where to save the models to.
-
-    Returns:
-        None
-
-    """
-    for name, model in predictors_and_id.items():
-        surrogates.save(model, path / name, overwrite=True)
-
-
-def _fit_internal(X, y, surrogate_type, ignore_warnings):
-    """Fit all models specified in ``specifications`` and save to disc.
-
-    Args:
-        X (pd.DataFrame or np.ndarray):
-        y (pd.Series or np.ndarray):
-        surrogate_type (str): Name of surrogate model which will be used for fitting.
-            Must be specified in ``src/surrogates/name_to_kwargs.yaml``.
-        ignore_warnings (boold): Should warnings be suppressed.
-
-    Returns:
-        predictor (dict): Dictionary containing 'model' and 'pipe'. Model is of type
-            ``surrogate_type``.
-
-    """
+    X, y = load_data(data_set, n_train=n_obs)
     model, kwargs = get_model_and_kwargs_from_type(surrogate_type)
     with warnings.catch_warnings():
         warning_filter = "ignore" if ignore_warnings else "default"
         warnings.simplefilter(warning_filter)
-        predictor = surrogates.fit(model, X, y, **kwargs)
-    return predictor
+        fitted_surrogate = surrogates.fit(model, X, y, **kwargs)
+    return fitted_surrogate
 
 
-def _make_id(surrogate_type, n_obs):
-    """Make ID from specifications."""
-    id_ = f"{surrogate_type}_n-{n_obs}"
-    return id_
+def load_specifications():
+    """Load specifications and return as list of lists."""
+    specifications = read_specifications(fitting=True)
+
+    args = []
+    for _, spec in specifications.items():
+        args.extend(itertools.product(*spec.values()))
+
+    df_args = pd.DataFrame(args, columns=list(specifications.popitem()[1].keys()))
+    df_args = df_args.drop_duplicates()
+    df_args["produces"] = df_args.apply(_make_produces_path, axis=1)
+
+    args_list = df_args.values.tolist()
+    return args_list
 
 
-def main():
-    specifications = read_specifications()
-    for project, spec in specifications.items():
-        predictors_and_id = fit_surrogates(**spec)
-        build_path = BLD / "surrogates" / project
-        build_path.mkdir(parents=True, exist_ok=True)
-        save_surrogates(predictors_and_id, build_path)
+def _make_produces_path(args):
+    """Make produces path from args."""
+    path = BLD / "surrogates"
+    produces = path / ("-".join(str(a) for a in args) + ".pkl")
+    return produces
 
 
-if __name__ == "__main__":
-    main()
+@pytask.mark.parametrize(
+    "produces, data_set, surrogate_type, n_obs", load_specifications()
+)
+def task_fit_surrogate(produces, data_set, surrogate_type, n_obs):
+    fitted_model = fit_surrogate(data_set, surrogate_type, n_obs)
+    surrogates.save(fitted_model, produces)
