@@ -48,6 +48,7 @@ def load_specifications():
     df_args = pd.DataFrame(args, columns=list(specifications.popitem()[1].keys()))
     df_args = df_args.drop_duplicates()
     df_args["produces"] = df_args.apply(_make_produces_path, axis=1)
+    df_args = df_args[["produces", "data_set", "surrogate_type", "n_obs"]]
 
     args_list = df_args.values.tolist()
     return args_list
@@ -63,6 +64,6 @@ def _make_produces_path(args):
 @pytask.mark.parametrize(
     "produces, data_set, surrogate_type, n_obs", load_specifications()
 )
-def task_fit_surrogate(produces, data_set, surrogate_type, n_obs):
+def task_fit_surrogates(produces, data_set, surrogate_type, n_obs):
     fitted_model = fit_surrogate(data_set, surrogate_type, n_obs)
     surrogates.save(fitted_model, produces)
