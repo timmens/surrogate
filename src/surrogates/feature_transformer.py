@@ -1,3 +1,17 @@
+"""Provides custom class to transform features before fitting procedure.
+
+The class can be used seamlessly with all sklearn methods but also as a standalone.
+
+
+Usage (Example on how to scale features as well as to append 2nd order terms):
+
+```
+    X = get_data()
+    ft = FeatureTransformer(degree=2, interaction=False, scale=True)
+    X_transformed = ft.fit_transform(X)
+```
+
+"""
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.base import TransformerMixin

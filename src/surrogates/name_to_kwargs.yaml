@@ -1,3 +1,16 @@
+# Specify surrogate model by combination of statistical model and keyword arguments.
+#
+# Surrogate models get a unique name and are then specified via the combination of a
+# statistcal model and a set of keyword arguments that are used in the fitting
+# procedure.
+#
+# Example: The classical linear model (standard ols) is identified by the unique
+# surrogate model name "linear" and specified by the statistical model
+# "PolynomailRegressor" with the combination of "degree: 1", "fit_intercept: True"
+# "scale: True" and "n_jobs: 4". Allowed keyword arguments can be found, in this
+# example, in the ``fit`` function in the module ``src/polynomialregression.py``.
+#
+
 linear:
     model: PolynomialRegressor
     kwargs:
