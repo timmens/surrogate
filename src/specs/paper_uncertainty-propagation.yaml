@@ -1,0 +1,12 @@
+run: False
+
+data_set:
+    - kw_97_extended
+surrogate_type:
+    - linear
+    - quadratic
+    - catboost_quadratic_paper
+n_obs:
+    - 500
+    - 5000
+    - 15000

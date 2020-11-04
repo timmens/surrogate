@@ -1,0 +1,13 @@
+run: True
+
+data_set:
+    - kw_97_extended
+surrogate_type:
+    - linear
+    - quadratic
+n_obs:
+    - 100
+    - 200
+    - 300
+    - 400
+    - 500

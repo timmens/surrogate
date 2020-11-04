@@ -1,0 +1,27 @@
+run: False
+
+data_set:
+    - kw_97_extended
+surrogate_type:
+    - linear
+    - quadratic
+    - cubic
+    - ridge_quadratic_full
+n_obs:
+    - 300
+    - 400
+    - 500
+    - 600
+    - 700
+    - 800
+    - 900
+    - 1000
+    - 2000
+    - 3000
+    - 4000
+    - 5000
+    - 6000
+    - 7000
+    - 8000
+    - 9000
+    - 10000

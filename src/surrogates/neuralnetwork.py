@@ -1,16 +1,8 @@
 """Function wrapper to use neural networks for regression"""
-from collections import namedtuple
-
 from keras import Sequential
 from keras.layers import Dense
 from keras.wrappers.scikit_learn import KerasRegressor
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-
-from src.utilities import suppress_stdout
-
-
-NeuralnetPredictor = namedtuple("NeuralnetPredictor", ["model", "pipe"])
 
 
 def fit(X, y, layers, n_epochs=100, n_batch_size=20):
@@ -25,15 +17,13 @@ def fit(X, y, layers, n_epochs=100, n_batch_size=20):
         n_batch_size (int): Batch size used for model fitting.
 
     Returns:
-        predictor (namedtuple): Named tuple with entries 'model' for the fitted model
-            and 'pipe' for the pre-processing pipeline.
-                model : keras.wrappers.scikit_learn.KerasRegressor
-                pipe : sklearn.pipeline.Pipeline
+        predictor (dict): Dictionary with entries 'model' for the fitted model and
+            'pipe' for the pre-processing pipeline.
+            - model : keras.wrappers.scikit_learn.KerasRegressor
+            - pipe : sklearn.pipeline.Pipeline
 
     """
-    preprocess_steps = [("scale", StandardScaler())]
-    pipe = Pipeline(preprocess_steps)
-
+    pipe = StandardScaler()
     XX = pipe.fit_transform(X)
 
     build_regressor = _get_build_regressor_func(input_dim=XX.shape[1], layers=layers)
@@ -41,11 +31,9 @@ def fit(X, y, layers, n_epochs=100, n_batch_size=20):
     nnet = KerasRegressor(
         build_fn=build_regressor, batch_size=n_batch_size, epochs=n_epochs
     )
+    nnet.fit(XX, y, verbose=False)
 
-    with suppress_stdout():
-        _ = nnet.fit(XX, y)
-
-    predictor = NeuralnetPredictor(nnet, pipe)
+    predictor = {"model": nnet, "pipe": pipe}
     return predictor
 
 
@@ -63,8 +51,8 @@ def predict(X, predictor):
         predictions (np.array): The predicted outcomes.
 
     """
-    XX = predictor.pipe.transform(X)
-    predictions = predictor.model.predict(XX)
+    XX = predictor["pipe"].transform(X)
+    predictions = predictor["model"].predict(XX)
     return predictions
 
 
@@ -74,13 +62,13 @@ def _get_build_regressor_func(input_dim, layers):
     The ``build_regressor`` function is needed by the Keras model to build the neural
     network. Here we create this function dynamically.
 
-    Example for layers. ``layers = [54, 81, 54]`` means that the first hidden layer has
+    Example for layers. ``layers = "54-81-54"`` means that the first hidden layer has
     54 nodes, the second hidden layer has 81 nodes, the third hidden layer has again 54
     nodes and implicitly the output layer has one node.
 
     Args:
         input_dim (int): Number of features.
-        layers (list): List describing the number of nodes per hidden layer.
+        layers (str): String describing the number of nodes per hidden layer.
 
     Returns:
         build_regressor (function): Function to build a neural net regressor.

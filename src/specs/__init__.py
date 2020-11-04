@@ -1,3 +1,3 @@
-from .specification import Specification
+from .read_specifications import read_specifications
 
-__all__ = ["Specification"]
+__all__ = ["read_specifications"]

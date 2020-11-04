@@ -1,18 +1,15 @@
 """Function wrapper to perform ridge regression."""
-from collections import namedtuple
 from copy import deepcopy
 
 import numpy as np
 from sklearn.linear_model import RidgeCV
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.preprocessing import StandardScaler
+
+from src.surrogates.feature_transformer import FeatureTransformer
 
 
-RidgePredictor = namedtuple("RidgePredictor", ["model", "pipe"])
-
-
-def fit(X, y, degree=1, fit_intercept=True, scale=True, alphas=None, cv=5, n_jobs=1):
+def fit(
+    X, y, degree=1, fit_intercept=True, interaction=True, scale=True, alphas=None, cv=5,
+):
     """Fit and return a (polynomial) ridge regression model.
 
     Args:
@@ -20,6 +17,7 @@ def fit(X, y, degree=1, fit_intercept=True, scale=True, alphas=None, cv=5, n_job
         y (pd.Series or np.ndarray): Data on outcomes.
         degree (int): Degree of the polynomial model. Default is 1.
         fit_intercept (bool): Should an intercept be fitted. Default is True.
+        interaction (bool): Should interaction terms be included when ``degree`` > 1.
         scale (bool): Scale data before performing regression. Default is True.
         alphas (np.ndarray): Array of dimension 1 containing the alpha values on which
             we perform cross-validation. Defaults to ``np.logspace(-5, 1, 100)``.
@@ -27,24 +25,20 @@ def fit(X, y, degree=1, fit_intercept=True, scale=True, alphas=None, cv=5, n_job
         n_jobs (int): Number of jobs to use for parallelization. Default is 1.
 
     Returns:
-        predictor (namedtuple): Named tuple with entries 'model' for the fitted model
-            and 'pipe' for the pre-processing pipeline.
-                model : sklearn.linear_model.LinearRegression
-                pipe : sklearn.pipeline.Pipeline
+        predictor (dict): Dictionary with entries 'model' for the fitted model and
+            'pipe' for the pre-processing pipeline.
+            - model : sklearn.linear_model.LinearRegression
+            - pipe : sklearn.pipeline.Pipeline
 
     """
-    preprocess_steps = [("poly", PolynomialFeatures(degree=degree, include_bias=False))]
-    if scale:
-        preprocess_steps += [("scale", StandardScaler())]
-
-    pipe = Pipeline(preprocess_steps)
+    pipe = FeatureTransformer(degree, interaction, scale)
     XX = pipe.fit_transform(X)
 
     alphas = np.insert(np.logspace(-5, 1, 25), 0, 0) if alphas is None else alphas
     rr = RidgeCV(alphas=alphas, fit_intercept=fit_intercept, cv=cv)
     rr = rr.fit(X=XX, y=y)
 
-    predictor = RidgePredictor(rr, pipe)
+    predictor = {"model": rr, "pipe": pipe}
     return predictor
 
 
@@ -53,10 +47,10 @@ def predict(X, predictor, threshold=None):
 
     Args:
         X (pd.DataFrame): New data on features.
-        predictor (namedtuple): Named tuple with entries 'model' for the fitted model
-            and 'pipe' for the pre-processing pipeline.
-                model : sklearn.linear_model.LinearRegression
-                pipe : sklearn.pipeline.Pipeline
+        predictor (dict): Dictionary with entries 'model' for the fitted model and
+            'pipe' for the pre-processing pipeline.
+            - model : sklearn.linear_model.LinearRegression
+            - pipe : sklearn.pipeline.Pipeline
         threshold (float): Coefficients below threshold are set to zero. Default is
             np.inf.
 
@@ -64,14 +58,14 @@ def predict(X, predictor, threshold=None):
         predictions (np.array): The predicted outcomes.
 
     """
-    threshold = np.inf if threshold is None else threshold
+    threshold = 0 if threshold is None else threshold
     predictor = deepcopy(predictor)
 
-    XX = predictor.pipe.transform(X)
+    XX = predictor["pipe"].transform(X)
 
-    coef = predictor.model.coef_.copy()
-    mask = np.abs(coef) < threshold
-    predictor.model.coef_[mask] = 0
+    coef = predictor["model"].coef_.copy()
+    mask = np.abs(coef) < 0
+    predictor["model"].coef_[mask] = 0
 
-    predictions = predictor.model.predict(XX)
+    predictions = predictor["model"].predict(XX)
     return predictions

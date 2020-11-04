@@ -1,0 +1,19 @@
+run: False
+
+data_set:
+    - kw_97_extended
+surrogate_type:
+    - quadratic_full
+    - catboost_quadratic_paper
+    - neuralnet_small_paper
+    - neuralnet_large_paper
+n_obs:
+    - 10000
+    - 12000
+    - 14000
+    - 16000
+    - 18000
+    - 20000
+    - 22000
+    - 24000
+    - 25000
