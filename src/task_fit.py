@@ -54,9 +54,9 @@ def load_specifications():
     return args_list
 
 
-def _make_produces_path(args):
+def _make_produces_path(args, project_name="paper_uncertainty-propagation"):
     """Make produces path from args."""
-    path = BLD / "surrogates"
+    path = BLD / "surrogates" / project_name
     produces = path / ("-".join(str(a) for a in args) + ".pkl")
     return produces
 

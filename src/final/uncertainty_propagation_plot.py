@@ -6,11 +6,17 @@ import seaborn as sns
 import src.surrogates as surrogate
 from src.config import BLD
 from src.config import SRC
+from src.specs import read_specifications
 
 
 def uncertainty_propagation_plots_surrogates(benchmark, predictions):
     """Make uncertainty propagation plot."""
-    color = {"catboost_quadratic": "tab:blue", "quadratic": "tab:green"}
+    color = {
+        "catboost_quadratic": "tab:blue",
+        "quadratic": "tab:green",
+        "quadratic_full": "tab:green",
+        "neural_net": "tab:blue",
+    }
     figures = {}
     a4_dims = (11.7, 8.27)
     for model in predictions:
@@ -34,12 +40,25 @@ def uncertainty_propagation_plots_surrogates(benchmark, predictions):
     return figures
 
 
-def uncertainty_propagation_plots_brute_force(benchmark):
+def get_brute_force_models(project_name):
+    if project_name == "thesis":
+        out = ["brute_force_10000", "brute_force_70000"]
+    else:
+        out = ["brute_force_5000", "brute_force_15000"]
+    return out
+
+
+def uncertainty_propagation_plots_brute_force(benchmark, project_name):
     """Make uncertainty propagation plot."""
-    color = {"brute_force_5000": "tab:orange", "brute_force_15000": "tab:red"}
+    color = {
+        "brute_force_5000": "tab:orange",
+        "brute_force_10000": "tab:orange",
+        "brute_force_15000": "tab:red",
+        "brute_force_70000": "tab:red",
+    }
     figures = {}
     a4_dims = (11.7, 8.27)
-    for model in ["brute_force_5000", "brute_force_15000"]:
+    for model in get_brute_force_models(project_name):
         fig, ax = plt.subplots(figsize=a4_dims)
         sns.kdeplot(benchmark, kernel="epa", lw=1.5, bw=0.01, ax=ax, color="black")
         brute_force = benchmark[: int(model.split("brute_force_")[1])].rename(
@@ -63,18 +82,31 @@ def uncertainty_propagation_plots_brute_force(benchmark):
     return figures
 
 
-def create_predictions(samples):
-    models = {
-        "catboost_quadratic_paper_n-15000": "catboost_quadratic",
-        "quadratic_n-5000": "quadratic",
-    }
+def get_models(project_name):
+    if project_name == "thesis":
+        models = {
+            "kw_94_one-neuralnet_large_thesis-70000": "neural_net",
+            "kw_94_one-quadratic_full-10000": "quadratic",
+        }
+    elif project_name == "paper_uncertainty-propagation":
+        models = {
+            "catboost_quadratic_paper-15000": "catboost_quadratic",
+            "quadratic_n-5000": "quadratic",
+        }
+    return models
+
+
+def create_predictions(samples, project_name):
+    models = get_models(project_name)
     fitted_models = {}
     for model, name in models.items():
-        fitted_models[name] = surrogate.load(
-            BLD / "surrogates" / "paper_uncertainty-propagation" / model
-        )
+        fitted_models[name] = surrogate.load(BLD / "surrogates" / project_name / model)
 
-    X = samples.drop("qoi", axis=1)
+    if project_name == "thesis":
+        col = "qoi500"
+    else:
+        col = "qoi"
+    X = samples.drop(col, axis=1)
     predictions = {}
     for name, fitted_model in fitted_models.items():
         predictions[name] = surrogate.predict(X, fitted_model).flatten()
@@ -83,9 +115,9 @@ def create_predictions(samples):
     return predictions
 
 
-def save_figures(figures):
+def save_figures(figures, project_name):
     """Save figure to bld path."""
-    path = BLD / "figures" / "paper_uncertainty-propagation"
+    path = BLD / "figures" / project_name
     path.mkdir(parents=True, exist_ok=True)
     for name, fig in figures.items():
         fig.savefig(path / name, bbox_inches="tight")
@@ -99,20 +131,27 @@ def _get_xlim_via_quantiles(values, left=0.001, right=0.999):
     return left, right
 
 
-def load_samples():
-    samples = pd.read_pickle(SRC / "data" / "samples-kw_97_extended.pkl")
+def load_samples(project_name):
+    specifications = read_specifications()
+    data_set = specifications[project_name]["data_set"][0]
+    samples = pd.read_pickle(SRC / "data" / f"samples-{data_set}.pkl")
     return samples
 
 
-def main():
-    samples = load_samples()
-    predictions = create_predictions(samples)
-    benchmark = samples["qoi"].rename("benchmark")
+def main(project_name):
+    samples = load_samples(project_name)
+    predictions = create_predictions(samples, project_name)
+    col = "qoi" if project_name != "thesis" else "qoi500"
+    benchmark = samples[col].rename("benchmark")
     surrogate_figures = uncertainty_propagation_plots_surrogates(benchmark, predictions)
-    brute_force_figures = uncertainty_propagation_plots_brute_force(benchmark)
+    brute_force_figures = uncertainty_propagation_plots_brute_force(
+        benchmark, project_name
+    )
     figures = {**surrogate_figures, **brute_force_figures}
-    save_figures(figures)
+    save_figures(figures, project_name)
 
 
 if __name__ == "__main__":
-    main()
+    keys = list(read_specifications().keys())
+    for project_name in keys:
+        main(project_name)

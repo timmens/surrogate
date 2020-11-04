@@ -30,17 +30,22 @@ def save_data(splitted_data, produces):
 
 def load_specifications():
     """Load specifications and return as list of lists."""
+    data_sets = load_data_set_names()
+    produces = [
+        (BLD / "data" / f"test-{data_set}.pkl", BLD / "data" / f"train-{data_set}.pkl",)
+        for data_set in data_sets
+    ]
+    return zip(produces, data_sets)
+
+
+def load_data_set_names():
     specifications = read_specifications(fitting=True)
     data_sets = set()
     for _, spec in specifications.items():
         data_sets = data_sets.union(set(spec["data_set"]))
 
     data_sets = list(data_sets)
-    produces = [
-        (BLD / "data" / f"test-{data_set}.pkl", BLD / "data" / f"train-{data_set}.pkl",)
-        for data_set in data_sets
-    ]
-    return zip(produces, data_sets)
+    return data_sets
 
 
 def load_data(name):

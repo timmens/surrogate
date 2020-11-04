@@ -57,6 +57,15 @@ catboost_fast:
         depth: 8
         loss_function: MAE
 
+catboost_quadratic:
+    model: CatBoostRegressor
+    kwargs:
+        iterations: 3000
+        learning_rate: 0.05
+        depth: 4
+        loss_function: MAE
+        pre_fit_model: quadratic
+
 catboost_quadratic_paper:
     model: CatBoostRegressor
     kwargs:
@@ -77,5 +86,19 @@ neuralnet_large_paper:
     model: NeuralnetRegressor
     kwargs:
         layers: "88-88-88-88-88"
+        n_epochs: 250
+        n_batch_size: 25
+
+neuralnet_small_thesis:
+    model: NeuralnetRegressor
+    kwargs:
+        layers: "22-22-22-22"
+        n_epochs: 200
+        n_batch_size: 25
+
+neuralnet_large_thesis:
+    model: NeuralnetRegressor
+    kwargs:
+        layers: "50-50-50-50-50"
         n_epochs: 250
         n_batch_size: 25
