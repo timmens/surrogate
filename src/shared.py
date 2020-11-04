@@ -48,7 +48,24 @@ def load_data(
 
 
 def get_model_and_kwargs_from_type(surrogate_type):
-    """Load kwargs given model specified at ``src/surrogates/name_to_kwargs.yaml``."""
+    """Load model name and kwargs given the uniquely specified surrogate model name.
+
+    Surrogate model names are specified with their respective keyword arguments in the
+    yaml file located at ``src/surrogates/name_to_kwargs.yaml``.
+
+    Args:
+        surrogate_type (str): Name of (uniquely identified) surrogate model.
+
+    Returns:
+        model (str): Name of (statistical) model used.
+        kwargs (dict): Dictionary containing keyword arguments for fitting procedure.
+
+    Example:
+    >>> from src.shared import get_model_and_kwargs_from_type
+    >>> get_model_and_kwargs_from_type("quadratic")
+    ('PolynomialRegressor', {'degree': 2, 'fit_intercept': True, 'interaction': False, 'scale': True, 'n_jobs': 4})  # noqa: B950
+
+    """
     path = SRC / "surrogates" / "name_to_kwargs.yaml"
     name_to_kwargs = yaml.safe_load(open(path, "r"))
     model, kwargs = tuple(name_to_kwargs[surrogate_type].values())
