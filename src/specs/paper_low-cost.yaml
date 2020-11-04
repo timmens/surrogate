@@ -1,6 +1,5 @@
 run: False
 
-# keyword arguments for fit function
 data_set:
     - kw_97_extended
 surrogate_type:
@@ -12,16 +11,3 @@ n_obs:
     - 300
     - 400
     - 500
-
-# plot specifications for mae_plot
-xscale: log
-xticks:
-    - 300
-    - 500
-    - 700
-    - 1000
-    - 2000
-    - 3000
-    - 5000
-    - 7000
-    - 10000

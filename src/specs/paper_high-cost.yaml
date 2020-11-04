@@ -1,6 +1,5 @@
 run: False
 
-# keyword arguments for fit function
 data_set:
     - kw_97_extended
 surrogate_type:
