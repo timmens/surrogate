@@ -3,10 +3,11 @@ import pandas as pd
 import pytask
 from sklearn.metrics import mean_absolute_error
 
-import src.surrogates as surrogates
+import src.surrogates as surrogate
 from src.config import BLD
 from src.shared import load_data
 from src.specs import read_specifications
+from src.task_fit import load_specifications as load_fit_specs
 
 
 def _predict(data_set, fitted_surrogates):
@@ -20,7 +21,7 @@ def _predict(data_set, fitted_surrogates):
     """
     X_test, _ = load_data(data_set, testing=True)
     predictions = {
-        name: surrogates.predict(X_test, fitted_surrogate).flatten()
+        name: surrogate.predict(X_test, fitted_surrogate).flatten()
         for name, fitted_surrogate in fitted_surrogates.items()
     }
     predictions = pd.DataFrame.from_dict(predictions).sort_index(axis=1)
@@ -53,7 +54,7 @@ def _load_fitted_surrogates(project_name):
     """Load fitted surrogate models for given project."""
     path = BLD / "surrogates" / project_name
     surrogate_paths = path.glob("*.pkl")
-    fitted_surrogates = {p.stem: surrogates.load(p) for p in surrogate_paths}
+    fitted_surrogates = {p.stem: surrogate.load(p) for p in surrogate_paths}
     return fitted_surrogates
 
 
@@ -76,6 +77,12 @@ def _load_data_set(project_name):
     return data_set
 
 
+def load_dependencies():
+    dependencies, _, _, _ = zip(*load_fit_specs())
+    return dependencies
+
+
+@pytask.mark.depends_on(load_dependencies())
 @pytask.mark.parametrize("produces, project_name", load_specifications())
 def task_predict_and_evaluate(produces, project_name):
     fitted_surrogates = _load_fitted_surrogates(project_name)

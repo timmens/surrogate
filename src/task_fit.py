@@ -5,11 +5,12 @@ import warnings
 import pandas as pd
 import pytask
 
-import src.surrogates as surrogates
+import src.surrogates as surrogate
 from src.config import BLD
 from src.shared import get_model_and_kwargs_from_type
 from src.shared import load_data
 from src.specs import read_specifications
+from src.task_train_test_split import load_specifications as load_split_specs
 
 
 def fit_surrogate(data_set, surrogate_type, n_obs, ignore_warnings=True):
@@ -33,7 +34,7 @@ def fit_surrogate(data_set, surrogate_type, n_obs, ignore_warnings=True):
     with warnings.catch_warnings():
         warning_filter = "ignore" if ignore_warnings else "default"
         warnings.simplefilter(warning_filter)
-        fitted_surrogate = surrogates.fit(model, X, y, **kwargs)
+        fitted_surrogate = surrogate.fit(model, X, y, **kwargs)
     return fitted_surrogate
 
 
@@ -45,25 +46,36 @@ def load_specifications():
     for _, spec in specifications.items():
         args.extend(itertools.product(*spec.values()))
 
-    df_args = pd.DataFrame(args, columns=list(specifications.popitem()[1].keys()))
+    specifications = specifications.popitem()
+    project_name = specifications[0]
+
+    df_args = pd.DataFrame(args, columns=list(specifications[1].keys()))
     df_args = df_args.drop_duplicates()
-    df_args["produces"] = df_args.apply(_make_produces_path, axis=1)
+    df_args["produces"] = df_args.apply(
+        make_produces_path, axis=1, project_name=project_name
+    )
     df_args = df_args[["produces", "data_set", "surrogate_type", "n_obs"]]
 
     args_list = df_args.values.tolist()
     return args_list
 
 
-def _make_produces_path(args, project_name="paper_uncertainty-propagation"):
+def make_produces_path(args, project_name):
     """Make produces path from args."""
     path = BLD / "surrogates" / project_name
     produces = path / ("-".join(str(a) for a in args) + ".pkl")
     return produces
 
 
+def load_dependencies():
+    dependencies, _ = zip(*load_split_specs())
+    return dependencies[0]
+
+
+@pytask.mark.depends_on(load_dependencies())
 @pytask.mark.parametrize(
     "produces, data_set, surrogate_type, n_obs", load_specifications()
 )
 def task_fit_surrogates(produces, data_set, surrogate_type, n_obs):
     fitted_model = fit_surrogate(data_set, surrogate_type, n_obs)
-    surrogates.save(fitted_model, produces)
+    surrogate.save(fitted_model, produces)
