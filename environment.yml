@@ -36,5 +36,3 @@ dependencies:
   - pip=19.2.3
   - pip:
     - pre-commit==1.18.3
-
-

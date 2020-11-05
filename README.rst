@@ -29,6 +29,7 @@ installed. At last you open up your favorite terminal emulator and run (line by 
 
     $ conda env create -f environment.yml
     $ conda activate surrogate
+    $ conda develop .
     $ pytask build
 
 
@@ -37,6 +38,11 @@ project automatically. Once pytask is done all results are stored in the folder 
 The results are comprised of splitted data sets, fitted surrogate models and
 predictions of fitted surrogate models on the testing data set; all of which can be
 reused in further analysis.
+
+In general we use a build system because we do not want to refit models if it is not
+necessary. pytask knows about all dependencies and thus understands when it is
+necessary to refit a model and when not. If you want to *force* refit all models then
+you simply delete the ``bld`` folder and run ``pytask build`` again.
 
 
 Specify "projects"
