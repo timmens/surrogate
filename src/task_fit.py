@@ -42,21 +42,20 @@ def load_specifications():
     """Load specifications and return as list of lists."""
     specifications = read_specifications(fitting=True)
 
-    args = []
-    for _, spec in specifications.items():
-        args.extend(itertools.product(*spec.values()))
+    columns = ["data_set", "surrogate_type", "n_obs"]
+    df_list = []
+    for project_name, spec in specifications.items():
+        args = list(itertools.product(*spec.values()))
+        df_args = pd.DataFrame(args, columns=columns)
+        df_args = df_args.drop_duplicates()
+        df_args["produces"] = df_args.apply(
+            make_produces_path, axis=1, project_name=project_name
+        )
+        df_args = df_args[["produces"] + columns]
+        df_list += [df_args]
 
-    specifications = specifications.popitem()
-    project_name = specifications[0]
-
-    df_args = pd.DataFrame(args, columns=list(specifications[1].keys()))
-    df_args = df_args.drop_duplicates()
-    df_args["produces"] = df_args.apply(
-        make_produces_path, axis=1, project_name=project_name
-    )
-    df_args = df_args[["produces", "data_set", "surrogate_type", "n_obs"]]
-
-    args_list = df_args.values.tolist()
+    df = pd.concat(df_list, axis=0)
+    args_list = df.values.tolist()
     return args_list
 
 
