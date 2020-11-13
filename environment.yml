@@ -7,7 +7,6 @@ channels:
 
 dependencies:
   - python=3.8
-  - pip
   - conda-build
 
   - ipykernel
@@ -18,21 +17,17 @@ dependencies:
   - numpy
 
   - scikit-learn
-  - keras
   - catboost
-
-  - matplotlib
-  - seaborn
 
   - pytest
   - pytask
-  - pylint
-  - click
   - cloudpickle
 
   - black
   - flake8
-  - tqdm
 
+  - pip
   - pip:
+    - keras
+    - tensorflow
     - pre-commit
