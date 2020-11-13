@@ -6,7 +6,7 @@ training data set.
 
 Important: In a generic specification, stored in ``src/specs``, the key "data_set"
 must coincide with the file name stored in ``src/data``, which has to be of the form
-"samples-'data_set'.pkl". For example "samples-kw_94_one.pkl" coincides with a key set
+"{data_set}.pkl". For example "kw_94_one.pkl" coincides with a key set
 as "data_set: kw_94_one" in a specification. If a new data set is added to the data
 folder then a new entry of number of test observations has to be added to the below
 dictionary "NUM_TESTING_OBS_DICT".
@@ -29,9 +29,7 @@ NUM_TESTING_OBS_DICT = {
 
 def load_data(name):
     """Read data set given name."""
-    data = pd.read_pickle(SRC / "data" / f"samples-{name}.pkl").rename(
-        {name: "iteration"}
-    )
+    data = pd.read_pickle(SRC / "data" / f"{name}.pkl").rename({name: "iteration"})
     return data
 
 

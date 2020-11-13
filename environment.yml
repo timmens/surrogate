@@ -6,12 +6,13 @@ channels:
   - pytask
 
 dependencies:
-  - python=3.7
+  - python=3.8
+  - pip
   - conda-build
 
-  - ipykernel=5.1.3
-  - jupyterlab=1.1.4
-  - nb_conda_kernels=2.2.2
+  - ipykernel
+  - jupyterlab
+  - nb_conda_kernels
 
   - pandas
   - numpy
@@ -33,6 +34,5 @@ dependencies:
   - flake8
   - tqdm
 
-  - pip=19.2.3
   - pip:
-    - pre-commit==1.18.3
+    - pre-commit

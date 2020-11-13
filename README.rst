@@ -71,10 +71,10 @@ When this specification is read the build system will fit a "linear" and "quadra
 model to the "kw_97_extended" data set using 100 to 500 training observations for each
 model. If run is set to False the specification will be ignored. *Any new specification
 file needs to have the exact same syntax!* Note also that this specification expects
-a data set named ``samples-kw_97_extended.pkl`` in the folder ``src/data`` (see below).
+a data set named ``kw_97_extended.pkl`` in the folder ``src/data`` (see below).
 Further, the specification expects the models "linear" and "quadratic" to be specified
-in the file ``name_to_kwargs.yaml`` in the folder ``src/surrogates`` (see below).
-At last note that one can create arbitrary many specification files; if the program is
+in the file ``name_to_kwargs.yaml`` in the folder ``src/surrogates`` (see below).  At
+last note that one can create arbitrary many specification files; if the program is
 build all specifications are read and executed iteratively.
 
 
@@ -82,13 +82,13 @@ Adding a new data set
 =====================
 
 In case you want to use the project with a new data set you have to move the new data
-set in the folder ``src/data`` and name it ``samples-{identifier_of_data_set}.pkl`` (
-note that the data has to be in a pickle format). In the current implementation the
-code expects the outcome column to be named "qoi" and **all** other columns to be
-features. *(Generalizing this implementation so that the outcome and feature columns
-can be flexibly specified can be done if necessary; please submit a feature request or
-create a pull request directly, if you need this feature.)* Note that this means that
-the program will break if there are multiple columns that start with "qoi".
+set in the folder ``src/data`` and name it ``{identifier_of_data_set}.pkl`` ( note that
+the data has to be in a pickle format). In the current implementation the code expects
+the outcome column to be named "qoi" and **all** other columns to be features.
+*(Generalizing this implementation so that the outcome and feature columns can be
+flexibly specified can be done if necessary; please submit a feature request or create a
+pull request directly, if you need this feature.)* Note that this means that the program
+will break if there are multiple columns that start with "qoi".
 
 Since the training-testing split is done automatically one has to specify the number of
 testing examples. For a new data set this has to be added to the dictionary in the file
